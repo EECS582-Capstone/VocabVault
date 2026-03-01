@@ -1,3 +1,14 @@
+/*
+Name of Code Artifact: homepage.js
+Description:
+Programmer's Name: Genea Dinnal
+Date Created: 01/16/2026
+Date Revised: 01/16/2026
+Preconditions (inputs):
+Postcondition (outputs):
+Errors: n/a
+*/
+
 chrome.storage.local.get({ flashcards: [] }, (data) => {
     renderFlashcards(data.flashcards);  
 });

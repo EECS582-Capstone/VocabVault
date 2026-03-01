@@ -1,3 +1,15 @@
+/*
+Name of Code Artifact: content.js
+Description:
+Programmer's Name: Jenny Tsotezo
+Date Created: 01/15/2026
+Date Revised: 01/15/2026
+Preconditions (inputs): User selected text
+Postcondition (outputs): New flashcard with selected text and translation
+Errors: n/a
+*/
+
+
 // Listen for translation requests
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "translate") {

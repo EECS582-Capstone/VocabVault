@@ -1,3 +1,14 @@
+/*
+Name of Code Artifact: background.js
+Description: Adds the translation function to context menu and sends translation request to API, returns translation to content.js
+Programmer's Name: Jenny Tsotezo, Skylar Franz
+Date Created: 01/15/2026
+Date Revised: 01/15/2026
+Preconditions (inputs):
+Postcondition (outputs):
+Errors: n/a
+*/
+
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "translate-text",
