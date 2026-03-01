@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <style>
         body {
+            padding: 10px 0;
             width: 300px;
-            padding: 16px;
             font-family: Arial, sans-serif;
-        }
-        h1 {
-            font-size: 18px;
-            margin: 0 0 16px 0;
+            background: linear-gradient(180deg, #c7f5ef 0%,#ffffff  100%);
         }
         .flashcard {
             padding: 12px;
@@ -21,10 +18,11 @@
         }
         .front {
             font-weight: bold;
+            font-size: 16px;
             margin-bottom: 4px;
         }
         .back {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
         }
         .empty {
@@ -32,11 +30,83 @@
             color: #999;
             padding: 20px;
         }
+        .card-wrapper {
+            position:relative;
+            width: 200px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .card {
+            width: 200px;
+            height: 120px;
+            border-radius: 18px;
+            background: #fff7ec;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+        }
+        .label {
+            text-align: left;
+            font-size: 16px;
+            color: #34596e;
+            margin-bottom: 8px;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            background-color: #2196F3;
+            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .header {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;    
+            padding: 12px 14px;  
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .header h1{
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+            color: #34596e;
+            letter-spacing: 0.3px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .spacer {
+            width: 24px;
+        }
     </style>
 </head>
 <body>
-    <h1>📚 VocabVault</h1>
-    <div id="flashcards"></div>
+    <div class="header">
+        <img src="icons/icon48.png" class="logo">
+        <h1>VocabVault</h1>
+        <div class="spacer"></div>
+    </div>
+    <p class="label">Most Recent Card:</p>
+    <div id="flashcards" class="card-wrapper"></div>
+    <a href="homepage.html" target="_blank" class = "link">View All Flashcards</a>
     <script src="popup.js"></script>
 </body>
 </html>

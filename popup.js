@@ -8,15 +8,10 @@ chrome.storage.local.get({ flashcards: [] }, (data) => {
         return;
     }
     
-    flashcards.reverse().forEach(card => {
-        const div = document.createElement('div');
-        div.className = 'flashcard';
-        div.innerHTML = `
-            <div class="front">${escapeHtml(card.front)}</div>
-            <div class="back">${escapeHtml(card.back)}</div>
-        `;
-        container.appendChild(div);
-    });
+    const mostRecentCard = flashcards.at(-1);
+    const cardElement = displayFlashcard(mostRecentCard);
+    container.appendChild(cardElement); 
+    
 });
 
 function escapeHtml(text) {
@@ -24,3 +19,22 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+function displayFlashcard(card) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+
+    const front = document.createElement('div');
+    front.className = 'front';
+    front.textContent = card.front;
+
+    const back = document.createElement('div');
+    back.className = 'back';
+    back.textContent = card.back;   
+
+    cardDiv.appendChild(front);
+    cardDiv.appendChild(back);
+
+    return cardDiv;
+}
+

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* formatting of flashcard container*/
+        #flashcard-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 80px;
+        justify-content: center;
+        }
+
+        /* defines dimensions, angle, and position of card */
+        .card {
+        width: 350px;
+        height: 200px;
+        perspective: 1000px;
+        cursor: pointer;
+        position: relative;
+        }
+
+        /* holds both faces of card, rotates 180 degrees on Y axis and preserves 3D space */
+        .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        }
+
+        /* defines the transformation when flipped*/
+        .card.flipped .card-inner {
+        transform: rotateY(180deg);
+        }
+        /* defines front and back faces of card*/
+        .card-front,
+        .card-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        padding: 20px;
+        border-radius: 10px;
+        box-sizing: border-box ;
+        font-size: 1.5rem;
+        }
+        /* special color and font for front of card*/
+        .card-front {
+        background: #f6efd5;
+        color: #000000;
+        }
+        /* changes background for back of card and does transformation*/
+        .card-back {
+        background: #A5BFCC;
+        transform: rotateY(180deg);
+        }
+
+        /* center aligns homepage */
+        #home {
+        text-align: center;
+        }
+
+        /* wrapper for mode toggle switch */
+        .mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        margin: 20px 0;
+        }
+
+        /* The outer pill */
+        .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+        }
+
+        /* Hides the checkbox */
+        .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        }
+
+        /* Background of pill */
+        .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        border-radius: 28px;
+        transition: 0.3s;
+        }
+
+        /* The circle */
+        .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: 0.3s;
+        }
+
+        /* turns pill blue when checked */
+        input:checked + .slider {
+        background-color: #a3a3a3;
+        }
+
+        /* slides circle right when checked */
+        input:checked + .slider:before {
+        transform: translateX(27px);
+        }
+
+        /* wrapper for logo home button */
+        .logo-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* image formatter for home button */
+        .logo-button img {
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+        }
+
+        /* formatting of menu icon */
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        /* formatting of dropdown menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 40px;
+            left: 25px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            z-index: 100;
+        }
+
+        /* format of dropdown menu links */
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 12px;
+            color: #34596e;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* hover effect for dropdown menu links */
+        .dropdown-menu a:hover {
+            background-color: #f0f6fa;
+        }
+
+        /* formatting for header wrapper */
+        .header {
+            position: relative;
+            background: #6eb8ce;
+            border-bottom: 4px solid #4c808f;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 10px 14px;
+        }
+        /* left grouping of header with logo and menu */
+        .left-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* formatting of title in header */
+        .title {
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+
+            margin: 0;
+            font-size: 36px;
+            font-weight: 750;
+            color: #1b3442;
+        }
+
+        /* empty spacing element for header */
+        .right-spacer {
+            width: 40px; /* roughly matches left-group width */
+        }
+
+        /* formatting of welcome message */
+        .welcome-message {
+            font-size: 20px;
+            color: #34596e;
+        }
+
+    </style>
+    <script src="homepage.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Vault</title>
+</head>
+<body> 
+    <!-- Header format with icon home button, hamburger menu, and title -->
+    <header class="header">
+        <div class="left-group">
+            <a href="homepage.html" class="logo-button">
+                <img src="icons/icon128.png" class="logo">
+            </a>
+
+            <img src="icons/hambuger_menu.png" class="menu-icon">
+        </div>
+
+        <h1 class="title">Vocab Vault</h1>
+
+        <div class="right-spacer"></div>
+
+        <div id="dropdown-menu" class="dropdown-menu">
+            <a href="homepage.html">Home</a>
+            <a href="statistics.html">Statistics</a>
+        </div>
+    </header>
+
+    <!-- Homepage with welcome message -->
+    <section id="home">
+        <p class="welcome-message">Your ultimate tool for mastering vocabulary.</p>
+    </section>
+    <!-- toggle button between learn and practice modes -->
+    <div class="mode-toggle">
+        <label class="switch">
+            <input type="checkbox" id="modeSwitch">
+            <span class="slider"></span>
+        </label>
+        <span id="modeLabel">Learn Mode</span>
+    </div>
+    <!-- learn mode section with flashcard display -->
+    <section id="learn-mode">
+        <h2>Learn</h2>
+        <div id="flashcard-container"></div>
+    </section>
+    <!-- empty practice mode section -->
+    <section id="practice-mode" style="display: none;">
+        <h2>Practice</h2>
+        <p>Practice mode coming soon...</p>
+    </section>
+
+</body>
+</html>
