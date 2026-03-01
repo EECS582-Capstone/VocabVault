@@ -1,31 +1,30 @@
 /*
 Name of Code Artifact: content.js
-Description:
+Description: Recieves translation from background.js and creates a card based off of that
 Programmer's Name: Jenny Tsotezo
-Date Created: 01/15/2026
-Date Revised: 01/15/2026
+Date Created: 02/15/2026
+Date Revised: 03/02/2026
 Preconditions (inputs): User selected text
 Postcondition (outputs): New flashcard with selected text and translation
 Errors: n/a
 */
 
-
-// Listen for translation requests
+// Listen for popup requests from background.js
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "translate") {
-        showTranslation(request.text);
+    if (request.action === "showTranslationCard") { // If request action is to show translation flashcard
+        showTranslation(request.text);              // Translate the text and display it on flashcard
     }
 });
 
-// Show translation popup
+// Send translation request: if successful, display on flashcard
 function showTranslation(text) {
-    chrome.runtime.sendMessage({
-        action: "translateText",
-        text: text,
-        direction: "en-es"
+    chrome.runtime.sendMessage({    // Send message to background.js
+        action: "translateText",    // Message name/id
+        text: text,                 // The text to send
+        direction: "en-es"          // Direction: English to spanish
     }, (response) => {
-        if (response && response.success) {
-            displayPopup(text, response.translation);
+        if (response && response.success) { // If message is returned with translation
+            displayPopup(text, response.translation); // Display it
         }
     });
 }
@@ -54,37 +53,37 @@ function displayPopup(original, translation) {
         </div>
     `;
     
-    document.body.appendChild(popup);
+    document.body.appendChild(popup); // Add pop-up to document
     
-    // Add flashcard button
+    // Event when "add flashcard button" is clicked
     document.getElementById('vv-add-btn').addEventListener('click', () => {
-        addFlashcard(original, translation);
-        popup.remove();
-        showNotification('Flashcard added!');
+        addFlashcard(original, translation);    // Adds flashcard to storage
+        popup.remove();                         // Remove "Create Flashcard" popup
+        showNotification('Flashcard added!');   // Show notification
     });
 }
 
-// Add flashcard to storage
+// Add flashcard to chrome local storage
 function addFlashcard(front, back) {
-    chrome.storage.local.get({ flashcards: [] }, (data) => {
-        const flashcards = data.flashcards;
-        flashcards.push({
-            id: Date.now(),
-            front: front,
-            back: back,
-            created: new Date().toISOString()
+    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from chrome local storage
+        const flashcards = data.flashcards; // Assign variable/list to flashcards data
+        flashcards.push({       // Add/push new flashcard
+            id: Date.now(),     // ID is current date
+            front: front,       // Front word is original language
+            back: back,         // Back is translation
+            created: new Date().toISOString() // Created date
         });
-        chrome.storage.local.set({ flashcards: flashcards });
+        chrome.storage.local.set({ flashcards: flashcards });   // Save new flashcards to local storage
     });
 }
 
 // Show notification
 function showNotification(message) {
-    const note = document.createElement('div');
-    note.textContent = message;
+    const note = document.createElement('div'); // Create new div
+    note.textContent = message;                 // Display message
     note.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;background:#4CAF50;color:white;padding:14px 24px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.2);font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;font-weight:500;';
-    document.body.appendChild(note);
-    setTimeout(() => note.remove(), 2500);
+    document.body.appendChild(note);            // Add notification to webpage/document
+    setTimeout(() => note.remove(), 2500);      // Remove after 2.5 seconds
 }
 
 // Escape HTML

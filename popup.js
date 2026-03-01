@@ -2,8 +2,8 @@
 Name of Code Artifact: popup.js
 Description:
 Programmer's Name: Jenny Tsotezo, Genea Dinnall
-Date Created: 01/15/2026
-Date Revised: 01/16/2026s
+Date Created: 02/15/2026
+Date Revised: 02/16/2026s
 Preconditions (inputs):
 Postcondition (outputs):
 Errors: n/a
