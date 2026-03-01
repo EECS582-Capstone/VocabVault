@@ -11,7 +11,7 @@ Errors: n/a
 
 // Retrieves all flashcards and displays them
 chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get all flashcards
-    renderFlashcards(data.flashcards);  // Re
+    renderFlashcards(data.flashcards);  // Renders those flashcards
 });
 
 // Takes flashcards from chrome local storage and adds them to homepage
