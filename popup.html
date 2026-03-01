@@ -1,9 +1,9 @@
 <!--
 Name of Code Artifact: popup.html
-Description: The HTML formatting for the extension popup
-Programmer's Name: Jenny Tsotezo, Genea Dinnall
+Description: HTML formatting and styling for the extension popup
+Programmer's Name: Jenny Tsotezo, Genea Dinnall, Skylar Franz
 Date Created: 02/15/2026
-Date Revised: 02/16/2026
+Date Revised: 03/01/2026
 Preconditions (inputs): Clicks
 Postcondition (outputs): Functions from popup.js
 Errors: n/a
@@ -50,18 +50,48 @@ Errors: n/a
         .card {
             width: 200px;
             height: 120px;
-            border-radius: 18px;
-            background: #fff7ec;
-            position: absolute;
-            top: 0;
-            left: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+        /* holds both faces of card, rotates 180 degrees on Y axis and preserves 3D space */
+        .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        }
+
+        /* defines the transformation when flipped*/
+        .card.flipped .card-inner {
+        transform: rotateY(180deg);
+        }
+        /* defines front and back faces of card*/
+        .card-front,
+        .card-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        padding: 20px;
+        border-radius: 10px;
+        box-sizing: border-box ;
+        font-size: 1.5rem;
+        }
+        /* special color and font for front of card*/
+        .card-front {
+        background: #f6efd5;
+        color: #000000;
+        }
+        /* changes background for back of card and does transformation*/
+        .card-back {
+        background: #A5BFCC;
+        transform: rotateY(180deg);
         }
         .label {
             text-align: left;
