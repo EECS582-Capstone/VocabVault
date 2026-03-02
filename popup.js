@@ -24,6 +24,12 @@ chrome.storage.local.get({ flashcards: [] }, (data) => { // Retrieve all flashca
     container.appendChild(cardElement); // Add flashcard to popup.html container
 });
 
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Function to display a flashcard
 function displayFlashcard(card) {
 
