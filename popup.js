@@ -1,17 +1,19 @@
 // Load and display flashcards
-chrome.storage.local.get({ flashcards: [] }, (data) => {
+chrome.storage.local.get({ decks: [], flashcards: [] }, (data) => {
     const container = document.getElementById('flashcards');
     const flashcards = data.flashcards;
-    
+    const decks = data.decks;
+
     if (flashcards.length === 0) {
         container.innerHTML = '<div class="empty">No flashcards yet!<br>Select text on any webpage and right-click to translate.</div>';
         return;
     }
-    
+
     const mostRecentCard = flashcards.at(-1);
-    const cardElement = displayFlashcard(mostRecentCard);
-    container.appendChild(cardElement); 
-    
+    const deck = decks.find(d => d.id === mostRecentCard.deckId);
+    const deckName = deck ? deck.name : null;
+    const cardElement = displayFlashcard(mostRecentCard, deckName);
+    container.appendChild(cardElement);
 });
 
 function escapeHtml(text) {
@@ -20,7 +22,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function displayFlashcard(card) {
+function displayFlashcard(card, deckName) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card';
 
@@ -30,11 +32,17 @@ function displayFlashcard(card) {
 
     const back = document.createElement('div');
     back.className = 'back';
-    back.textContent = card.back;   
+    back.textContent = card.back;
 
     cardDiv.appendChild(front);
     cardDiv.appendChild(back);
 
+    if (deckName) {
+        const label = document.createElement('div');
+        label.className = 'deck-label';
+        label.textContent = deckName;
+        cardDiv.appendChild(label);
+    }
+
     return cardDiv;
 }
-

@@ -15,6 +15,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         chrome.tabs.sendMessage(tab.id, {
             action: "translate",
             text: selectedText
+        }, () => {
+            if (chrome.runtime.lastError) {
+                // Content script not available on this tab (e.g., chrome:// pages)
+            }
         });
     }
 });
