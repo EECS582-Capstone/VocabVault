@@ -1,11 +1,11 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal
+Programmer's Name: Genea Dinnal, Skylar Franz
 Date Created: 02/16/2026
-Date Revised: 02/16/2026
+Date Revised: 03/01/2026
 Preconditions (inputs): Clicks and flashcards
-Postcondition (outputs): Displays flashcards as divs
+Postcondition (outputs): Displays flashcards as divs, Removes cards
 Errors: n/a
 */
 
@@ -24,17 +24,36 @@ function renderFlashcards(flashcards) {
         cardDiv.classList.add("card");  // And adds the class "card" to the new div (for styling)
 
         cardDiv.innerHTML = `
+            <button class="delete-button">X</button>
             <div class="card-inner">
                 <div class="card-front">${card.front}</div>
                 <div class="card-back">${card.back}</div>
             </div>
-        `;  // Add the front and back words to card
+        `;  // Add the front and back words to card, alongside delete button
 
         cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
             cardDiv.classList.toggle("flipped");    // It flips it
         });
 
+        const deleteButton = cardDiv.querySelector(".delete-button");   // Selects delete button
+        deleteButton.addEventListener("click", (e) => { // When delete button is clicked
+            if (confirm('Delete card?')) {  // If user confirms to delete the card
+                e.stopPropagation(); // (Stops event, a.k.a card from flipping)
+                deleteCard(card.id, cardDiv); // And delete card
+            }
+        });
+
         container.appendChild(cardDiv); // Add card to HTML section
+    });
+}
+
+// Deletes one card from storage based on card ID
+function deleteCard(id, cardDiv) {
+    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from local storage
+        const oldFlashcards = data.flashcards;  // Old flashcards
+        const newFlashcards = oldFlashcards.filter(card => card.id !== id); // Create new deck where that one card is removed
+        chrome.storage.local.set({ flashcards: newFlashcards }); // Save the updated deck to local storage flashcards
+        cardDiv.remove(); // Remove card element from homepage.html
     });
 }
 
@@ -80,8 +99,8 @@ const deleteAllButton = document.getElementById("deleteAll");
 
 // Delete all flashcards
 deleteAllButton.addEventListener("click", () => {
-    if (confirm('Are you sure you want to delete all flashcards?')) {
-        chrome.storage.local.remove('flashcards');
-        location.reload();
+    if (confirm('Are you sure you want to delete all flashcards?')) { // If user confirms they want to delete all flashcards
+        chrome.storage.local.remove('flashcards'); // Remove flashcards from local storage
+        location.reload(); // Refresh to show no cards
     }
 }); 
