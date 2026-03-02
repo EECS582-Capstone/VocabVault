@@ -189,9 +189,14 @@ function showNotification(message) {
     setTimeout(() => note.remove(), 2500);      // Remove after 2.5 seconds
 }
 
-// Escape HTML
+// Escapes HTML special characters to prevent XSS attacks
 function escapeHtml(text) {
+    // Create a temporary div element
     const div = document.createElement('div');
+    
+    // Set text content (automatically escapes HTML)
     div.textContent = text;
+    
+    // Return the escaped HTML string
     return div.innerHTML;
 }

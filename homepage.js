@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
+Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Sam Kelemen
 Date Created: 02/16/2026
 Date Revised: 03/01/2026
 Preconditions (inputs): Clicks and flashcards
@@ -188,4 +188,16 @@ deleteAllButton.addEventListener("click", () => {
         chrome.storage.local.remove('flashcards'); // Remove flashcards from local storage
         location.reload(); // Refresh to show no cards
     }
-}); 
+});
+
+// Escapes HTML special characters to prevent XSS attacks
+function escapeHtml(text) {
+    // Create a temporary div element
+    const div = document.createElement('div');
+    
+    // Set text content (automatically escapes HTML)
+    div.textContent = text;
+    
+    // Return the escaped HTML string
+    return div.innerHTML;
+}
