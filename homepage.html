@@ -219,6 +219,78 @@
             color: #34596e;
         }
 
+        /* deck tab bar */
+        #deck-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 12px 16px 0;
+        }
+
+        .deck-tab {
+            padding: 6px 16px;
+            border: 2px solid #6eb8ce;
+            border-radius: 20px;
+            background: white;
+            color: #34596e;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .deck-tab:hover {
+            background: #e6f4f8;
+        }
+
+        .deck-tab.active {
+            background: #34596e;
+            color: white;
+            border-color: #34596e;
+        }
+
+        .new-deck-btn {
+            border-style: dashed;
+        }
+
+        /* inline new-deck form */
+        .new-deck-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            padding: 8px 16px;
+        }
+
+        .new-deck-input {
+            padding: 6px 10px;
+            border: 1px solid #6eb8ce;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .new-deck-create-btn {
+            padding: 6px 14px;
+            background: #34596e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .new-deck-cancel-btn {
+            padding: 6px 14px;
+            background: #ccc;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
     </style>
     <script src="homepage.js" defer></script>
     <meta charset="UTF-8">
@@ -258,6 +330,8 @@
         </label>
         <span id="modeLabel">Learn Mode</span>
     </div>
+    <!-- deck tab navigation -->
+    <div id="deck-tabs"></div>
     <!-- learn mode section with flashcard display -->
     <section id="learn-mode">
         <h2>Learn</h2>
