@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Skylar Franz
+Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
 Date Created: 02/16/2026
 Date Revised: 03/01/2026
 Preconditions (inputs): Clicks and flashcards
@@ -9,25 +9,105 @@ Postcondition (outputs): Displays flashcards as divs, Removes cards
 Errors: n/a
 */
 
-// Retrieves all flashcards and displays them
-chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get all flashcards
-    renderFlashcards(data.flashcards);  // Renders those flashcards
+// Load flashcards and decks from Chrome storage when page loads
+chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
+    // Render all flashcards in the container
+    renderFlashcards(data.flashcards);
+    
+    // Create and populate the deck filter dropdown
+    loadDeckFilter(data.decks);
 });
 
-// Takes flashcards from chrome local storage and adds them to homepage
+// Creates and populates a deck filter dropdown in the page
+function loadDeckFilter(decks) {
+    // Get reference to the deck filter container element
+    const filterContainer = document.getElementById('deck-filter-container');
+    
+    // Exit if container doesn't exist on this page
+    if (!filterContainer) return;
+    
+    // Create a select dropdown element
+    const select = document.createElement('select');
+    select.id = 'deck-filter';                  // Set ID for later reference
+    
+    // Apply inline CSS styles for appearance
+    select.style.cssText = 'padding:8px 12px;border:2px solid #6eb8ce;border-radius:6px;font-size:14px;cursor:pointer;margin:10px;';
+    
+    // Create and add the "All Decks" option
+    const allOption = document.createElement('option');
+    allOption.value = 'all';                    // Value to indicate no filtering
+    allOption.textContent = 'All Decks';        // Display text
+    select.appendChild(allOption);
+    
+    // Iterate through each deck and create an option
+    decks.forEach(deck => {
+        // Create option element for this deck
+        const option = document.createElement('option');
+        option.value = deck.id;                 // Set value to deck ID
+        option.textContent = deck.name;         // Set display text to deck name
+        select.appendChild(option);             // Add option to select
+    });
+    
+    // Add event listener for when user changes deck selection
+    select.addEventListener('change', (e) => {
+        // Filter flashcards based on selected deck
+        filterFlashcardsByDeck(e.target.value);
+    });
+    
+    // Append the complete dropdown to the container
+    filterContainer.appendChild(select);
+}
+
+// Filters and displays flashcards based on selected deck
+function filterFlashcardsByDeck(deckId) {
+    // Retrieve flashcards from Chrome storage
+    chrome.storage.local.get({ flashcards: [] }, (data) => {
+        // Start with all flashcards
+        let filtered = data.flashcards;
+        
+        // If a specific deck is selected (not 'all')
+        if (deckId !== 'all') {
+            // Filter to only cards belonging to the selected deck
+            filtered = data.flashcards.filter(card => card.deckId === deckId);
+        }
+        
+        // Re-render the flashcards with filtered results
+        renderFlashcards(filtered);
+    });
+}
+
+// Renders flashcards in the flashcard container with flip and delete functionality
 function renderFlashcards(flashcards) {
-    const container = document.getElementById("flashcard-container");   // Get flashcard section from homepage.html
-    container.innerHTML = ""; // Remove old cards
+    // Get reference to the flashcard container element
+    const container = document.getElementById("flashcard-container");
+    
+    // Clear any existing cards from the container
+    container.innerHTML = "";
 
-    flashcards.forEach(card => {    // For each flashcard
-        const cardDiv = document.createElement("div");  // Create a new div
-        cardDiv.classList.add("card");  // And adds the class "card" to the new div (for styling)
+    // Check if there are no flashcards to display
+    if (flashcards.length === 0) {
+        // Show empty state message
+        container.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">No flashcards yet! Start creating some.</p>';
+        return;
+    }
 
+    // Iterate through each flashcard and create its DOM element
+    flashcards.forEach(card => {
+        // Create a div element for the card
+        const cardDiv = document.createElement("div");
+        
+        // Add CSS class for styling
+        cardDiv.classList.add("card");
+        
+        // Store card ID as data attribute for delete functionality
+        cardDiv.dataset.id = card.id;
+
+        // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
             <button class="delete-button">X</button>
             <div class="card-inner">
-                <div class="card-front">${card.front}</div>
-                <div class="card-back">${card.back}</div>
+                <div class="card-front">${escapeHtml(card.front)}</div>
+                <div class="card-back">${escapeHtml(card.back)}</div>
             </div>
         `;  // Add the front and back words to card, alongside delete button
 
@@ -66,28 +146,30 @@ const practiceSection = document.getElementById("practice-mode");
 
 // Changes mode (Practice/Switch) when switch is clicked
 modeSwitch.addEventListener("change", () => {
+  // Check if switch is in checked state
   if (modeSwitch.checked) {
-    // Practice mode
-    learnSection.style.display = "none";
-    practiceSection.style.display = "block";
-    modeLabel.textContent = "Practice Mode";
+    // Switch to practice mode
+    learnSection.style.display = "none";          // Hide learn section
+    practiceSection.style.display = "block";      // Show practice section
+    modeLabel.textContent = "Practice Mode";      // Update label text
   } else {
-    // Learn mode
-    practiceSection.style.display = "none";
-    learnSection.style.display = "block";
-    modeLabel.textContent = "Learn Mode";
+    // Switch to learn mode
+    practiceSection.style.display = "none";       // Hide practice section
+    learnSection.style.display = "block";         // Show learn section
+    modeLabel.textContent = "Learn Mode";         // Update label text
   }
 });
 
+// Get references to menu elements
 const menuIcon = document.querySelector(".menu-icon");
 const dropdownMenu = document.getElementById("dropdown-menu");
 
-// When menu icon is clicked, show dropdown
-menuIcon.addEventListener("click", (e) => { // When menu icon is clicked
+menuIcon.addEventListener("click", (e) => {
     dropdownMenu.style.display =
         dropdownMenu.style.display === "block" ? "none" : "block"; // If dropdown menu is already shown, hide it. Elsewise, show dropdown.
 });
 
+// Add click event listener to entire document to close menu when clicking outside
 // When clicked outside dropdown menu icon, close dropdown meny
 document.addEventListener("click", (e) => {
     if (!menuIcon.contains(e.target) && !dropdownMenu.contains(e.target)) { // If menu icon is not the one clicked
