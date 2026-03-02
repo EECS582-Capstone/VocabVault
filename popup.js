@@ -114,80 +114,18 @@ function loadFlashcards(deckId) {
         // Clear the container before adding flashcards
         container.innerHTML = '';
         
+
+        const mostRecentCard = flashcards.at(-1);   // Get most recent flashcard (last)
+        const cardElement = displayFlashcard(mostRecentCard);   // Create element based on last flashcard
+        container.appendChild(cardElement); // Add flashcard to popup.html container
+        
+        /*
         // Reverse array to show most recent cards first, then iterate through each card
         flashcards.reverse().forEach(card => {
-            // Create a flashcard element for this card
-            const cardElement = createFlashcardElement(card);
-            
-            // Append the card element to the container
-            container.appendChild(cardElement);
+            const newCard = displayFlashcard(card);
+            container.appendChild(newCard);
         });
-    });
-}
-
-// Creates a DOM element for a single flashcard with flip and delete functionality
-function createFlashcardElement(card) {
-    // Create a div element for the card
-    const cardDiv = document.createElement('div');
-    
-    // Add CSS class for styling
-    cardDiv.className = 'card-item';
-    
-    // Store the card ID as a data attribute for later reference
-    cardDiv.dataset.id = card.id;
-    
-    // Set the inner HTML with card content and delete button
-    cardDiv.innerHTML = `
-        <div class="card-content">
-            <div class="card-content-front">${escapeHtml(card.front)}</div>
-            <div class="card-content-back">${escapeHtml(card.back)}</div>
-        </div>
-        <button class="delete-btn" title="Delete card">×</button>
-    `;
-    
-    // Add click event listener to flip the card when clicked
-    cardDiv.addEventListener('click', (e) => {
-        // Only flip if user didn't click the delete button
-        if (!e.target.classList.contains('delete-btn')) {
-            // Toggle the 'flipped' class to show/hide back content
-            cardDiv.classList.toggle('flipped');
-        }
-    });
-    
-    // Add click event listener to the delete button
-    cardDiv.querySelector('.delete-btn').addEventListener('click', (e) => {
-        // Prevent the click from bubbling up to the card (which would flip it)
-        e.stopPropagation();
-        
-        // Call the delete function with this card's ID
-        deleteFlashcard(card.id);
-    });
-    
-    // Return the completed card element
-    return cardDiv;
-}
-
-// Deletes a flashcard from Chrome storage after user confirmation
-function deleteFlashcard(cardId) {
-    // Show confirmation dialog to user
-    if (!confirm('Are you sure you want to delete this flashcard?')) {
-        // Exit if user cancels
-        return;
-    }
-    
-    // Retrieve flashcards from Chrome storage
-    chrome.storage.local.get({ flashcards: [] }, (data) => {
-        // Filter out the flashcard with matching ID
-        const flashcards = data.flashcards.filter(card => card.id !== cardId);
-        
-        // Save the updated flashcards array back to storage
-        chrome.storage.local.set({ flashcards: flashcards }, () => {
-            // Get the currently selected deck from dropdown
-            const currentDeck = document.getElementById('deckSelector').value;
-            
-            // Reload flashcards with the current filter to update the display
-            loadFlashcards(currentDeck);
-        });
+        */
     });
 }
 
