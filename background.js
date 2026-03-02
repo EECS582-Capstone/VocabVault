@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: background.js
 Description: Adds the translation function to context menu and sends translation request to API, returns translation to content.js
-Programmer's Name: Jenny Tsotezo, Skylar Franz
+Programmer's Name: Jenny Tsotezo, Skylar Franz, Sam Kelemen
 Date Created: 02/15/2026
 Date Revised: 03/01/2026
 Preconditions (inputs): User-selected text

@@ -1,3 +1,14 @@
+<!--
+Name of Code Artifact: homepage.html
+Description: The HTML document styling for homepage. Links to homepage.js
+Programmer's Name: Genea Dinnal, Skylar Franz, Sam Kelemen
+Date Created: 02/16/2026
+Date Revised: 03/01/2026
+Preconditions (inputs): Clicks
+Postcondition (outputs): The homepage (flashcards, modes, other links)
+Errors: n/a
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -219,6 +230,21 @@
             color: #34596e;
         }
 
+        /* delete button*/
+        .delete-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            z-index: 10;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
         /* deck tab bar */
         #deck-tabs {
             display: flex;
@@ -332,10 +358,12 @@
     </div>
     <!-- deck tab navigation -->
     <div id="deck-tabs"></div>
+    <button id="deleteAll">Delete All Flashcards</button>
     <!-- learn mode section with flashcard display -->
     <section id="learn-mode">
         <h2>Learn</h2>
         <div id="flashcard-container"></div>
+        <br><br>
     </section>
     <!-- empty practice mode section -->
     <section id="practice-mode" style="display: none;">

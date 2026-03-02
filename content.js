@@ -1,9 +1,9 @@
 /*
 Name of Code Artifact: content.js
 Description: Recieves translation from background.js and creates a card based off of that
-Programmer's Name: Jenny Tsotezo
+Programmer's Name: Jenny Tsotezo, Sam Kelemen
 Date Created: 02/15/2026
-Date Revised: 03/02/2026
+Date Revised: 03/01/2026
 Preconditions (inputs): User selected text
 Postcondition (outputs): New flashcard with selected text and translation
 Errors: n/a
@@ -176,7 +176,7 @@ function addFlashcard(front, back, direction, deckId = 'default') {
             deckId: deckId,        // Track which deck this belongs to
             created: new Date().toISOString()
         });
-        chrome.storage.local.set({ flashcards: flashcards });
+        chrome.storage.local.set({ flashcards: flashcards });   // Save new flashcards to local storage
     });
 }
 
@@ -189,9 +189,14 @@ function showNotification(message) {
     setTimeout(() => note.remove(), 2500);      // Remove after 2.5 seconds
 }
 
-// Escape HTML
+// Escapes HTML special characters to prevent XSS attacks
 function escapeHtml(text) {
+    // Create a temporary div element
     const div = document.createElement('div');
+    
+    // Set text content (automatically escapes HTML)
     div.textContent = text;
+    
+    // Return the escaped HTML string
     return div.innerHTML;
 }
