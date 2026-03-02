@@ -164,7 +164,10 @@ modeSwitch.addEventListener("change", () => {
 const menuIcon = document.querySelector(".menu-icon");
 const dropdownMenu = document.getElementById("dropdown-menu");
 
+// Add click event listener to hamburger menu icon
 menuIcon.addEventListener("click", (e) => {
+    // Toggle dropdown menu visibility
+    // If currently visible, hide it; if hidden, show it
     dropdownMenu.style.display =
         dropdownMenu.style.display === "block" ? "none" : "block"; // If dropdown menu is already shown, hide it. Elsewise, show dropdown.
 });
