@@ -67,7 +67,7 @@ const dropdownMenu = document.getElementById("dropdown-menu");
 menuIcon.addEventListener("click", (e) => { // When menu icon is clicked
     dropdownMenu.style.display =
         dropdownMenu.style.display === "block" ? "none" : "block"; // If dropdown menu is already shown, hide it. Elsewise, show dropdown.
-}); 
+});
 
 // When clicked outside dropdown menu icon, close dropdown meny
 document.addEventListener("click", (e) => {
@@ -75,3 +75,13 @@ document.addEventListener("click", (e) => {
         dropdownMenu.style.display = "none"; // Hide dropdown
     }
 });
+
+const deleteAllButton = document.getElementById("deleteAll");
+
+// Delete all flashcards
+deleteAllButton.addEventListener("click", () => {
+    if (confirm('Are you sure you want to delete all flashcards?')) {
+        chrome.storage.local.remove('flashcards');
+        location.reload();
+    }
+}); 
