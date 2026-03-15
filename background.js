@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: background.js
 Description: Adds the translation function to context menu and sends translation request to API, returns translation to content.js
-Programmer's Name: Jenny Tsotezo, Skylar Franz
+Programmer's Name: Jenny Tsotezo, Skylar Franz, Sam Kelemen
 Date Created: 02/15/2026
 Date Revised: 03/01/2026
 Preconditions (inputs): User-selected text
@@ -15,21 +15,6 @@ chrome.runtime.onInstalled.addListener(() => {  // On extension installation
         id: "translate-text",       // ID to reference option
         title: "Translate \"%s\"",  // Displays text selected with %s
         contexts: ["selection"]     // When does option occur (when text is selected and right-clicked)
-    });
-
-    // Initialize default deck structure in Chrome storage if no decks exist
-    chrome.storage.local.get({ decks: [] }, (data) => {
-        // Check if the decks array is empty (first time installation)
-        if (data.decks.length === 0) {
-            // Create the default "All Cards" deck that contains all flashcards
-            chrome.storage.local.set({ 
-                decks: [{ 
-                    id: 'default',              // Unique identifier for the default deck
-                    name: 'All Cards',          // Display name shown to user
-                    isDefault: true             // Flag to identify this as the default deck
-                }] 
-            });
-        }
     });
 });
 

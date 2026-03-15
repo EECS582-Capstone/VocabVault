@@ -1,11 +1,11 @@
 /*
 Name of Code Artifact: popup.js
-Description:
-Programmer's Name: Jenny Tsotezo, Genea Dinnall
+Description: Displays most recent flashcard on extension popup
+Programmer's Name: Jenny Tsotezo, Genea Dinnall, Skylar Franz, Sam Kelemen
 Date Created: 02/15/2026
-Date Revised: 02/16/2026s
-Preconditions (inputs):
-Postcondition (outputs):
+Date Revised: 03/01/2026
+Preconditions (inputs): Flashcard from chrome local storage
+Postcondition (outputs): HTML div of flashcard
 Errors: n/a
 */
 
@@ -114,80 +114,18 @@ function loadFlashcards(deckId) {
         // Clear the container before adding flashcards
         container.innerHTML = '';
         
+
+        const mostRecentCard = flashcards.at(-1);   // Get most recent flashcard (last)
+        const cardElement = displayFlashcard(mostRecentCard);   // Create element based on last flashcard
+        container.appendChild(cardElement); // Add flashcard to popup.html container
+        
+        /*
         // Reverse array to show most recent cards first, then iterate through each card
         flashcards.reverse().forEach(card => {
-            // Create a flashcard element for this card
-            const cardElement = createFlashcardElement(card);
-            
-            // Append the card element to the container
-            container.appendChild(cardElement);
+            const newCard = displayFlashcard(card);
+            container.appendChild(newCard);
         });
-    });
-}
-
-// Creates a DOM element for a single flashcard with flip and delete functionality
-function createFlashcardElement(card) {
-    // Create a div element for the card
-    const cardDiv = document.createElement('div');
-    
-    // Add CSS class for styling
-    cardDiv.className = 'card-item';
-    
-    // Store the card ID as a data attribute for later reference
-    cardDiv.dataset.id = card.id;
-    
-    // Set the inner HTML with card content and delete button
-    cardDiv.innerHTML = `
-        <div class="card-content">
-            <div class="card-content-front">${escapeHtml(card.front)}</div>
-            <div class="card-content-back">${escapeHtml(card.back)}</div>
-        </div>
-        <button class="delete-btn" title="Delete card">×</button>
-    `;
-    
-    // Add click event listener to flip the card when clicked
-    cardDiv.addEventListener('click', (e) => {
-        // Only flip if user didn't click the delete button
-        if (!e.target.classList.contains('delete-btn')) {
-            // Toggle the 'flipped' class to show/hide back content
-            cardDiv.classList.toggle('flipped');
-        }
-    });
-    
-    // Add click event listener to the delete button
-    cardDiv.querySelector('.delete-btn').addEventListener('click', (e) => {
-        // Prevent the click from bubbling up to the card (which would flip it)
-        e.stopPropagation();
-        
-        // Call the delete function with this card's ID
-        deleteFlashcard(card.id);
-    });
-    
-    // Return the completed card element
-    return cardDiv;
-}
-
-// Deletes a flashcard from Chrome storage after user confirmation
-function deleteFlashcard(cardId) {
-    // Show confirmation dialog to user
-    if (!confirm('Are you sure you want to delete this flashcard?')) {
-        // Exit if user cancels
-        return;
-    }
-    
-    // Retrieve flashcards from Chrome storage
-    chrome.storage.local.get({ flashcards: [] }, (data) => {
-        // Filter out the flashcard with matching ID
-        const flashcards = data.flashcards.filter(card => card.id !== cardId);
-        
-        // Save the updated flashcards array back to storage
-        chrome.storage.local.set({ flashcards: flashcards }, () => {
-            // Get the currently selected deck from dropdown
-            const currentDeck = document.getElementById('deckSelector').value;
-            
-            // Reload flashcards with the current filter to update the display
-            loadFlashcards(currentDeck);
-        });
+        */
     });
 }
 
@@ -203,28 +141,22 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-
-// Legacy function to display a single flashcard 
+// Function to display a flashcard
 function displayFlashcard(card) {
-    // Create a div element for the card
-    const cardDiv = document.createElement('div');
-    
-    // Add CSS class for styling
-    cardDiv.className = 'card';
 
-    // Create div for front side
-    const front = document.createElement('div');
-    front.className = 'front';
-    front.textContent = card.front;
+    const cardDiv = document.createElement("div");  // Create a new div
+    cardDiv.classList.add("card");  // And adds the class "card" to the new div (for styling)
 
-    // Create div for back side
-    const back = document.createElement('div');
-    back.className = 'back';
-    back.textContent = card.back;   
+    cardDiv.innerHTML = `
+        <div class="card-inner">
+            <div class="card-front">${card.front}</div>
+            <div class="card-back">${card.back}</div>
+        </div>
+    `;  // Add the front and back words to card
 
-    // Append front and back to card
-    cardDiv.appendChild(front);
-    cardDiv.appendChild(back);
+    cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
+        cardDiv.classList.toggle("flipped");    // It flips it
+    });
 
     // Return the completed card element
     return cardDiv;
