@@ -143,6 +143,56 @@ Errors: n/a
             margin-top: 4px;
             letter-spacing: 0.3px;
         }
+        .search-container {
+        padding: 10px 14px;
+        background-color: white;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        #searchInput:focus {
+            border-color: #2196F3;
+        }
+        .deck-container {
+            padding: 10px 14px;
+            background-color: white;
+        }
+        .deck-label {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-bottom: 4px;
+        }
+        #deckSelector {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 6px;
+            box-sizing: border-box;
+        }
+        #newDeckBtn {
+            width: 100%;
+            padding: 8px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        #newDeckBtn:hover {
+            background: #1976D2;
+        }
     </style>
 </head>
 <body>
@@ -151,7 +201,17 @@ Errors: n/a
         <h1>VocabVault</h1>
         <div class="spacer"></div>
     </div>
-    <p class="label">Most Recent Card:</p>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search flashcards...">
+    </div>
+    <div class="deck-container">
+        <label class="deck-label">Filter by Deck:</label>
+        <select id="deckSelector">
+            <option value="all">All Cards</option>
+        </select>
+        <button id="newDeckBtn">+ New Deck</button>
+    </div>
+    <p class="label" id="cardLabel">Most Recent Card:</p>
     <div id="flashcards" class="card-wrapper"></div>
     <a href="homepage.html" target="_blank" class="link">View All Flashcards</a>
     <script src="popup.js"></script>

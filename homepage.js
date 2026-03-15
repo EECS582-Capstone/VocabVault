@@ -43,6 +43,9 @@ chrome.storage.local.get({ decks: [], flashcards: [] }, (raw) => {
     allFlashcards = data.flashcards;
     renderDecks(allDecks, allFlashcards, activeDeckId);
     renderFlashcards(allFlashcards);
+
+    // Add event listener for search input
+    document.getElementById('searchInput').addEventListener('input', handleSearch);
 });
 
 function renderDecks(decks, flashcards, activeId) {
@@ -238,4 +241,38 @@ function escapeHtml(text) {
     
     // Return the escaped HTML string
     return div.innerHTML;
+}
+
+// Handles search input and filters flashcards in real-time
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    
+    // If search is empty, show all cards for active deck
+    if (searchTerm === '') {
+        const filtered = activeDeckId === 'all'
+            ? allFlashcards
+            : allFlashcards.filter(c => c.deckId === activeDeckId);
+        renderFlashcards(filtered);
+        return;
+    }
+    
+    // Otherwise, filter by search term
+    filterFlashcardsBySearch(searchTerm);
+}
+
+// Filters and displays flashcards based on search term
+function filterFlashcardsBySearch(searchTerm) {
+    // Start with deck-filtered cards
+    let flashcards = activeDeckId === 'all'
+        ? allFlashcards
+        : allFlashcards.filter(c => c.deckId === activeDeckId);
+    
+    // Then filter by search term (search both front and back)
+    flashcards = flashcards.filter(card => 
+        card.front.toLowerCase().includes(searchTerm) || 
+        card.back.toLowerCase().includes(searchTerm)
+    );
+    
+    // Render the filtered results
+    renderFlashcards(flashcards);
 }
