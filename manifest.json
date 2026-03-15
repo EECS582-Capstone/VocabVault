@@ -1,17 +1,17 @@
 {
   "name": "VocabVault",
-  "description": "Translator with Flashcard Builder",
-  "version": "1.0.0",
+  "description": "Translator with Flashcard Builder and transcript-driven vocab capture",
+  "version": "1.1.0",
   "manifest_version": 3,
   "permissions": ["storage", "contextMenus"],
-  "host_permissions": ["https://api.mymemory.translated.net/*"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["transcript-ui.js", "content.js"]
     }
   ],
   "action": {

@@ -230,6 +230,79 @@ Errors: n/a
             color: #34596e;
         }
 
+        .settings-panel {
+            width: min(760px, calc(100vw - 40px));
+            margin: 20px auto 8px;
+            padding: 22px 24px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #eefcf4 0%, #f8fbff 100%);
+            box-shadow: 0 12px 28px rgba(52, 89, 110, 0.12);
+            border: 1px solid rgba(110, 184, 206, 0.25);
+            text-align: left;
+        }
+
+        .settings-panel h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #1b3442;
+        }
+
+        .settings-panel p {
+            margin-top: 0;
+            color: #4a6473;
+            line-height: 1.5;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .settings-field label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #34596e;
+        }
+
+        .settings-field input {
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1px solid #b8d7e1;
+            font-size: 14px;
+        }
+
+        .settings-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .settings-actions button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            background: #34596e;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .settings-status {
+            font-size: 13px;
+            color: #2f855a;
+            min-height: 18px;
+        }
+
         /* delete button*/
         .delete-button {
             position: absolute;
@@ -347,6 +420,28 @@ Errors: n/a
     <!-- Homepage with welcome message -->
     <section id="home">
         <p class="welcome-message">Your ultimate tool for mastering vocabulary.</p>
+    </section>
+    <section id="transcription-settings" class="settings-panel">
+        <h2>Transcription Settings</h2>
+        <p>Live transcript capture uses AssemblyAI streaming. Enter your AssemblyAI API key below; the default endpoint and model are already set for real-time word timestamps.</p>
+        <div class="settings-grid">
+            <div class="settings-field">
+                <label for="transcriptionApiKey">API Key</label>
+                <input id="transcriptionApiKey" type="password" placeholder="Paste your transcription API key">
+            </div>
+            <div class="settings-field">
+                <label for="transcriptionModel">Model</label>
+                <input id="transcriptionModel" type="text" placeholder="universal-streaming-multilingual">
+            </div>
+            <div class="settings-field" style="grid-column: 1 / -1;">
+                <label for="transcriptionEndpoint">Endpoint</label>
+                <input id="transcriptionEndpoint" type="text" placeholder="https://api.assemblyai.com">
+            </div>
+        </div>
+        <div class="settings-actions">
+            <button id="saveTranscriptionSettings" type="button">Save Settings</button>
+            <span id="transcriptionSettingsStatus" class="settings-status"></span>
+        </div>
     </section>
     <!-- toggle button between learn and practice modes -->
     <div class="mode-toggle">
