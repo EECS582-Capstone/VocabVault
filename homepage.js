@@ -9,10 +9,16 @@ Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks
 Errors: n/a
 */
 
+const DEFAULT_TRANSCRIPTION_ENDPOINT = 'https://api.assemblyai.com';
+const DEFAULT_TRANSCRIPTION_MODEL = 'universal-streaming-multilingual';
+
 // Load flashcards and decks from Chrome storage when page loads
 chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
     // Render all flashcards in the container
     renderFlashcards(data.flashcards);
+    
+    // Create and populate the deck filter dropdown
+    loadDeckFilter(data.decks);
 });
 
 // Migration: ensure a default deck exists; assign orphan cards to it
@@ -48,6 +54,8 @@ chrome.storage.local.get({ decks: [], flashcards: [] }, (raw) => {
     // Add event listener for search input
     document.getElementById('searchInput').addEventListener('input', handleSearch);
 });
+
+document.addEventListener('DOMContentLoaded', loadTranscriptionSettings);
 
 function renderDecks(decks, flashcards, activeId) {
     const tabsContainer = document.getElementById('deck-tabs');
@@ -223,6 +231,7 @@ deleteAllButton.addEventListener("click", () => {
         location.reload(); // Refresh to show no cards
     }
 });
+
 
 // Grabs and assigns variables from homepage.html document elements
 const modeSwitch = document.getElementById("modeSwitch");
@@ -420,7 +429,7 @@ menuIcon.addEventListener("click", (e) => {
 });
 
 // Add click event listener to entire document to close menu when clicking outside
-// When clicked outside dropdown menu icon, close dropdown meny
+// When clicked outside dropdown menu icon, close dropdown menu
 document.addEventListener("click", (e) => {
     if (!menuIcon.contains(e.target) && !dropdownMenu.contains(e.target)) { // If menu icon is not the one clicked
         dropdownMenu.style.display = "none"; // Hide dropdown
@@ -437,6 +446,38 @@ function escapeHtml(text) {
     
     // Return the escaped HTML string
     return div.innerHTML;
+}
+
+function loadTranscriptionSettings() {
+    chrome.storage.local.get({
+        transcriptionApiKey: '',
+        transcriptionEndpoint: DEFAULT_TRANSCRIPTION_ENDPOINT,
+        transcriptionModel: DEFAULT_TRANSCRIPTION_MODEL
+    }, (data) => {
+        document.getElementById('transcriptionApiKey').value = data.transcriptionApiKey || '';
+        document.getElementById('transcriptionEndpoint').value = data.transcriptionEndpoint || DEFAULT_TRANSCRIPTION_ENDPOINT;
+        document.getElementById('transcriptionModel').value = data.transcriptionModel || DEFAULT_TRANSCRIPTION_MODEL;
+    });
+
+    document.getElementById('saveTranscriptionSettings').addEventListener('click', saveTranscriptionSettings);
+}
+
+function saveTranscriptionSettings() {
+    const apiKey = document.getElementById('transcriptionApiKey').value.trim();
+    const endpoint = document.getElementById('transcriptionEndpoint').value.trim() || DEFAULT_TRANSCRIPTION_ENDPOINT;
+    const model = document.getElementById('transcriptionModel').value.trim() || DEFAULT_TRANSCRIPTION_MODEL;
+    const status = document.getElementById('transcriptionSettingsStatus');
+
+    chrome.storage.local.set({
+        transcriptionApiKey: apiKey,
+        transcriptionEndpoint: endpoint,
+        transcriptionModel: model
+    }, () => {
+        status.textContent = 'Transcription settings saved.';
+        setTimeout(() => {
+            status.textContent = '';
+        }, 2500);
+    });
 }
 
 // Handles search input and filters flashcards in real-time
