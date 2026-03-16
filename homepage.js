@@ -143,9 +143,10 @@ function renderFlashcards(flashcards) {
         // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
             <button class="edit-button">E</button>
-            <div id="edit-form" style="display:none">
-                <input id="front" value="${escapeHtml(card.front)}">
-                <input id="back" value="${escapeHtml(card.back)}">
+            <div class="edit-form" style="display:none">
+                <input class="front-input" value="${escapeHtml(card.front)}">
+                <input class="back-input" value="${escapeHtml(card.back)}">
+                <button class="save-button">Save</button>
             </div>
             <button class="delete-button">X</button>
             <div class="card-inner">
@@ -166,15 +167,27 @@ function renderFlashcards(flashcards) {
             }
         });
 
-        const editButton = cardDiv.querySelector(".edit-button");  
+        const editButton = cardDiv.querySelector(".edit-button");
+        const editForm = cardDiv.querySelector(".edit-form");
         editButton.addEventListener("click", (e) => { // When edit button is clicked
             e.stopPropagation();
-            const editForm = cardDiv.querySelector("#edit-form");
-            if (editForm.style.display === 'none') {
-                editForm.style.display = 'block';
-            } else {
-                editForm.style.display = 'none';
-            }
+            editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+        });
+
+        editForm.addEventListener("click", (e) => {
+            e.stopPropagation();
+         });
+
+        const saveButton = cardDiv.querySelector(".save-button");
+        saveButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const cardIndex = flashcards.findIndex(c => c.id === card.id);
+            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;
+            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value;
+            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front;
+            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back;
+            chrome.storage.local.set({ flashcards: flashcards });
+            editForm.style.display = 'none';
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
