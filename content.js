@@ -91,7 +91,7 @@ function displayPopup(original, translation, direction) {
                 </div>
                 <div style="margin-bottom:16px;">
                     <strong style="display:block;margin-bottom:8px;color:#333;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Translation:</strong>
-                    <div id="vv-translation-text" style="padding:12px;background:#e3f2fd;border-radius:6px;color:#222;font-size:16px;line-height:1.5;font-weight:500;">${escapeHtml(translation)}</div>
+                    <input id="vv-translation-text" style="padding:12px;background:#e3f2fd;border-radius:6px;color:#222;font-size:16px;line-height:1.5;font-weight:500;" value="${escapeHtml(translation)}">
                 </div>
                 ${decks.length > 0 ? `
                 <div style="margin-bottom:16px;">
