@@ -1,9 +1,9 @@
 /*
 Name of Code Artifact: content.js
 Description: Recieves translation from background.js and creates a card based off of that
-Programmer's Name: Jenny Tsotezo, Sam Kelemen
+Programmer's Name: Jenny Tsotezo, Sam Kelemen, Skylar Franz
 Date Created: 02/15/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): User selected text
 Postcondition (outputs): New flashcard with selected text and translation
 Errors: n/a

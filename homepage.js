@@ -1,11 +1,11 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Sam Kelemen
+Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
 Date Created: 02/16/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): Clicks and flashcards
-Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks
+Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks, Edits cards
 Errors: n/a
 */
 
@@ -180,15 +180,16 @@ function renderFlashcards(flashcards) {
             e.stopPropagation();
          });
 
+        // On save button click, update the card with the new values from edit form
         saveButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const cardIndex = flashcards.findIndex(c => c.id === card.id);
-            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;
-            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value;
-            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front;
-            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back;
-            chrome.storage.local.set({ flashcards: flashcards });
-            editForm.style.display = 'none';
+            e.stopPropagation(); // Stop from flipping
+            const cardIndex = flashcards.findIndex(c => c.id === card.id);  // Find card in local storage based off ID
+            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
+            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value; // Same for back
+            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front; // Change card front text on homepage.html to new text
+            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back; // Same for back
+            chrome.storage.local.set({ flashcards: flashcards }); // Save flashcards (without this, it doesn't update)
+            editForm.style.display = 'none'; // Remove edit form
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
