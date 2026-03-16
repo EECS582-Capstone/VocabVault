@@ -142,18 +142,18 @@ function renderFlashcards(flashcards) {
 
         // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
-            <button class="edit-button">E</button>
-            <div class="edit-form" style="display:none">
+            <div class="edit-form">
                 <input class="front-input" value="${escapeHtml(card.front)}">
                 <input class="back-input" value="${escapeHtml(card.back)}">
                 <button class="save-button">Save</button>
             </div>
-            <button class="delete-button">X</button>
             <div class="card-inner">
+                <button class="edit-button">E</button>
+                <button class="delete-button">X</button>
                 <div class="card-front">${escapeHtml(card.front)}</div>
                 <div class="card-back">${escapeHtml(card.back)}</div>
             </div>
-        `;  // Add the front and back words to card, alongside delete button
+        `;  // Add the front and back words to card, alongside delete/edit buttons and form
 
         cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
             cardDiv.classList.toggle("flipped");    // It flips it
@@ -169,16 +169,17 @@ function renderFlashcards(flashcards) {
 
         const editButton = cardDiv.querySelector(".edit-button");
         const editForm = cardDiv.querySelector(".edit-form");
+        const saveButton = cardDiv.querySelector(".save-button");
+
         editButton.addEventListener("click", (e) => { // When edit button is clicked
-            e.stopPropagation();
-            editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+            e.stopPropagation(); // (Stops event, a.k.a card from flipping)
+            editForm.style.display = editForm.style.display === 'none' ? 'flex' : 'none'; // If edit button is clicked, show edit form (flex), otherwise show nothing
         });
 
-        editForm.addEventListener("click", (e) => {
+        editForm.addEventListener("click", (e) => { // Stop card from flipping when edit form is toggled
             e.stopPropagation();
          });
 
-        const saveButton = cardDiv.querySelector(".save-button");
         saveButton.addEventListener("click", (e) => {
             e.stopPropagation();
             const cardIndex = flashcards.findIndex(c => c.id === card.id);
