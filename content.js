@@ -129,16 +129,11 @@ function displayPopup(original, translation, direction, options = {}) {
             });
         });
 
+// Create flashcard with current translation and direction (editable by user)
         document.getElementById('vv-add-btn').addEventListener('click', () => {
             const selectedDeck = document.getElementById('vv-deck-select')?.value || 'default';
             
-            // Create flashcard with current translation and direction (editable by user)
-            const inputOriginal = document.getElementById('vv-original-text').value;
-            const inputTranslation = document.getElementById('vv-translation-text').value;
-            addFlashcard(inputOriginal, inputTranslation, currentDirection, selectedDeck);
-            
-            // Remove the popup from the page
-            popup.remove();
+            addFlashcard(original, currentTranslation, currentDirection, selectedDeck);
             
             // Show success notification to user
             showNotification('Flashcard added!');
@@ -149,8 +144,8 @@ function displayPopup(original, translation, direction, options = {}) {
                 deckId: selectedDeck
             });
             closePopup();
-        });
     });
+});
 }
 
 function addFlashcard(front, back, direction, deckId = 'default') {
