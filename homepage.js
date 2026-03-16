@@ -13,9 +13,6 @@ Errors: n/a
 chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
     // Render all flashcards in the container
     renderFlashcards(data.flashcards);
-    
-    // Create and populate the deck filter dropdown
-    loadDeckFilter(data.decks);
 });
 
 // Migration: ensure a default deck exists; assign orphan cards to it
@@ -145,6 +142,11 @@ function renderFlashcards(flashcards) {
 
         // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
+            <button class="edit-button">E</button>
+            <div id="edit-form" style="display:none">
+                <input id="front" value="${escapeHtml(card.front)}">
+                <input id="back" value="${escapeHtml(card.back)}">
+            </div>
             <button class="delete-button">X</button>
             <div class="card-inner">
                 <div class="card-front">${escapeHtml(card.front)}</div>
@@ -161,6 +163,17 @@ function renderFlashcards(flashcards) {
             if (confirm('Delete card?')) {  // If user confirms to delete the card
                 e.stopPropagation(); // (Stops event, a.k.a card from flipping)
                 deleteCard(card.id, cardDiv); // And delete card
+            }
+        });
+
+        const editButton = cardDiv.querySelector(".edit-button");  
+        editButton.addEventListener("click", (e) => { // When edit button is clicked
+            e.stopPropagation();
+            const editForm = cardDiv.querySelector("#edit-form");
+            if (editForm.style.display === 'none') {
+                editForm.style.display = 'block';
+            } else {
+                editForm.style.display = 'none';
             }
         });
 
@@ -187,6 +200,12 @@ deleteAllButton.addEventListener("click", () => {
     }
 });
 
+// Edits one card
+function editCard(id, cardDiv) {
+    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from local storage
+        chrome.storage.local.set({ flashcards: newFlashcards }); // Save the updated deck to local storage flashcards
+    });
+}
 
 // Grabs and assigns variables from homepage.html document elements
 const modeSwitch = document.getElementById("modeSwitch");
