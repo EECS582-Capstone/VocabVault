@@ -19,12 +19,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add event listener to deck selector dropdown
     document.getElementById('deckSelector').addEventListener('change', (e) => {
-        // When user selects a different deck, reload flashcards filtered by that deck
-        loadFlashcards(e.target.value);
+    loadFlashcards(e.target.value);
+
+    // Clear search input when changing decks
+    document.getElementById('searchInput').value = '';
+    document.getElementById('cardLabel').textContent = 'Most Recent Card:';
     });
     
     // Add event listener to "New Deck" button
     document.getElementById('newDeckBtn').addEventListener('click', createNewDeck);
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        console.log('Typing:', e.target.value);  
+        handleSearch(e);
+    });
 });
 
 // Loads all decks from Chrome storage and populates the deck selector dropdown
@@ -160,4 +168,61 @@ function displayFlashcard(card) {
 
     // Return the completed card element
     return cardDiv;
+}
+
+// At the top of your file, outside any function
+let searchTimeout;
+
+// In handleSearch function, replace the filterFlashcardsBySearch call:
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const deckId = document.getElementById('deckSelector').value;
+    
+    if (searchTerm === '') {
+        loadFlashcards(deckId);
+        document.getElementById('cardLabel').textContent = 'Most Recent Card:';
+        return;
+    }
+    
+    // Clear previous timeout
+    clearTimeout(searchTimeout);
+    
+    // Wait 300ms after user stops typing before searching
+    searchTimeout = setTimeout(() => {
+        filterFlashcardsBySearch(searchTerm, deckId);
+    }, 300);
+}
+
+// Filters and displays flashcards based on search term
+function filterFlashcardsBySearch(searchTerm, deckId) {
+    chrome.storage.local.get({ flashcards: [] }, (data) => {
+        const container = document.getElementById('flashcards');
+        let flashcards = data.flashcards;
+        
+        // Filter by deck first if not "all"
+        if (deckId !== 'all') {
+            flashcards = flashcards.filter(card => card.deckId === deckId);
+        }
+        
+        // Then filter by search term (search both front and back)
+        flashcards = flashcards.filter(card => 
+            card.front.toLowerCase().includes(searchTerm) || 
+            card.back.toLowerCase().includes(searchTerm)
+        );
+        
+        // Update label to show search results count
+        document.getElementById('cardLabel').textContent = `Search Results (${flashcards.length}):`;
+        
+        // If no results found
+        if (flashcards.length === 0) {
+            container.innerHTML = '<div class="empty">No flashcards match your search.</div>';
+            return;
+        }
+        
+        // Display the most recent matching card
+        container.innerHTML = '';
+        const mostRecentCard = flashcards.at(-1);
+        const cardElement = displayFlashcard(mostRecentCard);
+        container.appendChild(cardElement);
+    });
 }

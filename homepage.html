@@ -3,7 +3,7 @@ Name of Code Artifact: homepage.html
 Description: The HTML document styling for homepage. Links to homepage.js
 Programmer's Name: Genea Dinnal, Skylar Franz, Sam Kelemen
 Date Created: 02/16/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): Clicks
 Postcondition (outputs): The homepage (flashcards, modes, other links)
 Errors: n/a
@@ -316,6 +316,35 @@ Errors: n/a
             cursor: pointer;
             width: 20px;
             height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* edit button*/
+        .edit-button {
+            position: absolute;
+            top: 5px;
+            right: 30px;
+            z-index: 10;
+            background: blue;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-form {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            margin-bottom: 5px;
         }
 
         /* deck tab bar */
@@ -361,7 +390,6 @@ Errors: n/a
             justify-content: center;
             padding: 8px 16px;
         }
-
         .new-deck-input {
             padding: 6px 10px;
             border: 1px solid #6eb8ce;
@@ -369,7 +397,6 @@ Errors: n/a
             font-size: 14px;
             outline: none;
         }
-
         .new-deck-create-btn {
             padding: 6px 14px;
             background: #34596e;
@@ -379,7 +406,6 @@ Errors: n/a
             font-size: 14px;
             cursor: pointer;
         }
-
         .new-deck-cancel-btn {
             padding: 6px 14px;
             background: #ccc;
@@ -388,6 +414,24 @@ Errors: n/a
             border-radius: 6px;
             font-size: 14px;
             cursor: pointer;
+        }
+        .search-container {
+        padding: 10px 16px;
+        max-width: 400px;
+        margin: 16px auto;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #6eb8ce;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        #searchInput:focus {
+            border-color: #34596e;
+            box-shadow: 0 0 0 3px rgba(52, 89, 110, 0.1);
         }
 
     </style>
@@ -453,6 +497,9 @@ Errors: n/a
     </div>
     <!-- deck tab navigation -->
     <div id="deck-tabs"></div>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search flashcards...">
+    </div>
     <button id="deleteAll">Delete All Flashcards</button>
     <!-- learn mode section with flashcard display -->
     <section id="learn-mode">
@@ -460,10 +507,19 @@ Errors: n/a
         <div id="flashcard-container"></div>
         <br><br>
     </section>
-    <!-- empty practice mode section -->
+    <!-- functional practice mode section -->
     <section id="practice-mode" style="display: none;">
         <h2>Practice</h2>
-        <p>Practice mode coming soon...</p>
+        <div id="test-container">
+            <h3>Test Mode</h3>
+            <div>
+                <label><input type="radio" name="test-mode" value="easy" checked> Easy</label>
+                <label><input type="radio" name="test-mode" value="hard"> Hard</label>
+            </div>
+            <button id="begin-test">Begin Test</button>
+            <div id="test-setup"></div>
+            <div id="test-list"></div>
+        </div>
     </section>
 
 </body>

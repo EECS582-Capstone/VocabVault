@@ -1,7 +1,8 @@
 /*
+/*
 Name of Code Artifact: content.js
-Description: Injects translation popups and flashcard creation into web pages.
-Programmer's Name: Jenny Tsotezo, Sam Kelemen
+Description: Injects translation popups, receives translations from background.js, and creates flashcards based on selected text or transcript clicks.
+Programmer's Name: Jenny Tsotezo, Sam Kelemen, Skylar Franz
 Date Created: 02/15/2026
 Date Revised: 03/15/2026
 Preconditions (inputs): User-selected text or transcript word clicks
@@ -55,10 +56,12 @@ function displayPopup(original, translation, direction, options = {}) {
             <div class="vv-modal-backdrop"></div>
             <div class="vv-modal-card">
                 <button type="button" class="vv-modal-close" aria-label="Close">×</button>
+
                 <div class="vv-modal-group">
                     <strong class="vv-label">Original</strong>
                     <div class="vv-original">${escapeHtml(original)}</div>
                 </div>
+
                 <div class="vv-modal-group">
                     <label class="vv-label" for="vv-direction-select">Translation Direction</label>
                     <select id="vv-direction-select" class="vv-select">
@@ -66,10 +69,12 @@ function displayPopup(original, translation, direction, options = {}) {
                         <option value="es-en" ${direction === 'es-en' ? 'selected' : ''}>Spanish → English</option>
                     </select>
                 </div>
+
                 <div class="vv-modal-group">
                     <strong class="vv-label">Translation</strong>
                     <div id="vv-translation-text" class="vv-translation">${escapeHtml(translation)}</div>
                 </div>
+
                 ${decks.length > 0 ? `
                 <div class="vv-modal-group">
                     <label class="vv-label" for="vv-deck-select">Add to Deck</label>
@@ -77,8 +82,10 @@ function displayPopup(original, translation, direction, options = {}) {
                         ${decks.map((deck) => `<option value="${escapeHtml(deck.id)}">${escapeHtml(deck.name)}</option>`).join('')}
                     </select>
                 </div>` : ''}
+
                 <button id="vv-add-btn" class="vv-primary-btn">Add to Flashcards</button>
             </div>
+
         `;
 
         document.body.appendChild(popup);
@@ -124,7 +131,16 @@ function displayPopup(original, translation, direction, options = {}) {
 
         document.getElementById('vv-add-btn').addEventListener('click', () => {
             const selectedDeck = document.getElementById('vv-deck-select')?.value || 'default';
-            addFlashcard(original, currentTranslation, currentDirection, selectedDeck);
+            
+            // Create flashcard with current translation and direction (editable by user)
+            const inputOriginal = document.getElementById('vv-original-text').value;
+            const inputTranslation = document.getElementById('vv-translation-text').value;
+            addFlashcard(inputOriginal, inputTranslation, currentDirection, selectedDeck);
+            
+            // Remove the popup from the page
+            popup.remove();
+            
+            // Show success notification to user
             showNotification('Flashcard added!');
             options.onAdd?.({
                 original,
@@ -138,12 +154,14 @@ function displayPopup(original, translation, direction, options = {}) {
 }
 
 function addFlashcard(front, back, direction, deckId = 'default') {
-    chrome.storage.local.get({ flashcards: [] }, (data) => {
+    chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
         const flashcards = data.flashcards;
+        const decks = data.decks;
+
         const frontLang = direction === 'es-en' ? 'es' : 'en';
         const backLang = direction === 'es-en' ? 'en' : 'es';
 
-        flashcards.push({
+        const newCard = {
             id: Date.now(),
             front,
             back,
@@ -151,9 +169,18 @@ function addFlashcard(front, back, direction, deckId = 'default') {
             backLang,
             deckId,
             created: new Date().toISOString()
-        });
+        };
 
-        chrome.storage.local.set({ flashcards });
+        flashcards.push(newCard);
+
+        // Update the deck's cardIds list
+        const deck = decks.find(d => d.id === deckId);
+        if (deck) {
+            deck.cardIds = deck.cardIds || [];
+            deck.cardIds.push(newCard.id);
+        }
+
+        chrome.storage.local.set({ flashcards, decks });
     });
 }
 
