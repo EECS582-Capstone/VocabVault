@@ -3,7 +3,7 @@ Name of Code Artifact: homepage.html
 Description: The HTML document styling for homepage. Links to homepage.js
 Programmer's Name: Genea Dinnal, Skylar Franz, Sam Kelemen
 Date Created: 02/16/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): Clicks
 Postcondition (outputs): The homepage (flashcards, modes, other links)
 Errors: n/a
@@ -243,6 +243,35 @@ Errors: n/a
             cursor: pointer;
             width: 20px;
             height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* edit button*/
+        .edit-button {
+            position: absolute;
+            top: 5px;
+            right: 30px;
+            z-index: 10;
+            background: blue;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-form {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            margin-bottom: 5px;
         }
 
         /* deck tab bar */
@@ -388,6 +417,5 @@ Errors: n/a
         <h2>Practice</h2>
         <p>Practice mode coming soon...</p>
     </section>
-
 </body>
 </html>

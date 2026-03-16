@@ -1,9 +1,9 @@
 /*
 Name of Code Artifact: content.js
 Description: Recieves translation from background.js and creates a card based off of that
-Programmer's Name: Jenny Tsotezo, Sam Kelemen
+Programmer's Name: Jenny Tsotezo, Sam Kelemen, Skylar Franz
 Date Created: 02/15/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): User selected text
 Postcondition (outputs): New flashcard with selected text and translation
 Errors: n/a
@@ -80,7 +80,7 @@ function displayPopup(original, translation, direction) {
                 <button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:-8px;right:-8px;background:#ff5252;color:white;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:20px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,0.2);">×</button>
                 <div style="margin-bottom:16px;">
                     <strong style="display:block;margin-bottom:8px;color:#333;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Original:</strong>
-                    <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#222;font-size:16px;line-height:1.5;">${escapeHtml(original)}</div>
+                    <input id="vv-original-text" style="padding:12px;background:#f5f5f5;border-radius:6px;color:#222;font-size:16px;line-height:1.5;" value="${escapeHtml(original)}">
                 </div>
                 <div style="margin-bottom:16px;">
                     <label style="display:block;margin-bottom:8px;color:#333;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Translation Direction:</label>
@@ -91,7 +91,7 @@ function displayPopup(original, translation, direction) {
                 </div>
                 <div style="margin-bottom:16px;">
                     <strong style="display:block;margin-bottom:8px;color:#333;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Translation:</strong>
-                    <div id="vv-translation-text" style="padding:12px;background:#e3f2fd;border-radius:6px;color:#222;font-size:16px;line-height:1.5;font-weight:500;">${escapeHtml(translation)}</div>
+                    <input id="vv-translation-text" style="padding:12px;background:#e3f2fd;border-radius:6px;color:#222;font-size:16px;line-height:1.5;font-weight:500;" value="${escapeHtml(translation)}">
                 </div>
                 ${decks.length > 0 ? `
                 <div style="margin-bottom:16px;">
@@ -143,8 +143,10 @@ function displayPopup(original, translation, direction) {
             // Get the selected deck ID from dropdown, or use 'default' if no dropdown exists
             const selectedDeck = document.getElementById('vv-deck-select')?.value || 'default';
             
-            // Create flashcard with current translation and direction
-            addFlashcard(original, currentTranslation, currentDirection, selectedDeck);
+            // Create flashcard with current translation and direction (editable by user)
+            const inputOriginal = document.getElementById('vv-original-text').value;
+            const inputTranslation = document.getElementById('vv-translation-text').value;
+            addFlashcard(inputOriginal, inputTranslation, currentDirection, selectedDeck);
             
             // Remove the popup from the page
             popup.remove();

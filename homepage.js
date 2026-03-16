@@ -1,11 +1,11 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Sam Kelemen
+Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
 Date Created: 02/16/2026
-Date Revised: 03/01/2026
+Date Revised: 03/15/2026
 Preconditions (inputs): Clicks and flashcards
-Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks
+Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks, Edits cards
 Errors: n/a
 */
 
@@ -13,9 +13,6 @@ Errors: n/a
 chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
     // Render all flashcards in the container
     renderFlashcards(data.flashcards);
-    
-    // Create and populate the deck filter dropdown
-    loadDeckFilter(data.decks);
 });
 
 // Migration: ensure a default deck exists; assign orphan cards to it
@@ -145,12 +142,18 @@ function renderFlashcards(flashcards) {
 
         // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
-            <button class="delete-button">X</button>
+            <div class="edit-form">
+                <input class="front-input" value="${escapeHtml(card.front)}">
+                <input class="back-input" value="${escapeHtml(card.back)}">
+                <button class="save-button">Save</button>
+            </div>
             <div class="card-inner">
+                <button class="edit-button">E</button>
+                <button class="delete-button">X</button>
                 <div class="card-front">${escapeHtml(card.front)}</div>
                 <div class="card-back">${escapeHtml(card.back)}</div>
             </div>
-        `;  // Add the front and back words to card, alongside delete button
+        `;  // Add the front and back words to card, alongside delete/edit buttons and form
 
         cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
             cardDiv.classList.toggle("flipped");    // It flips it
@@ -162,6 +165,31 @@ function renderFlashcards(flashcards) {
                 e.stopPropagation(); // (Stops event, a.k.a card from flipping)
                 deleteCard(card.id, cardDiv); // And delete card
             }
+        });
+
+        const editButton = cardDiv.querySelector(".edit-button");
+        const editForm = cardDiv.querySelector(".edit-form");
+        const saveButton = cardDiv.querySelector(".save-button");
+
+        editButton.addEventListener("click", (e) => { // When edit button is clicked
+            e.stopPropagation(); // (Stops event, a.k.a card from flipping)
+            editForm.style.display = editForm.style.display === 'none' ? 'flex' : 'none'; // If edit button is clicked, show edit form (flex), otherwise show nothing
+        });
+
+        editForm.addEventListener("click", (e) => { // Stop card from flipping when edit form is toggled
+            e.stopPropagation();
+         });
+
+        // On save button click, update the card with the new values from edit form
+        saveButton.addEventListener("click", (e) => {
+            e.stopPropagation(); // Stop from flipping
+            const cardIndex = flashcards.findIndex(c => c.id === card.id);  // Find card in local storage based off ID
+            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
+            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value; // Same for back
+            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front; // Change card front text on homepage.html to new text
+            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back; // Same for back
+            chrome.storage.local.set({ flashcards: flashcards }); // Save flashcards (without this, it doesn't update)
+            editForm.style.display = 'none'; // Remove edit form
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
@@ -187,6 +215,12 @@ deleteAllButton.addEventListener("click", () => {
     }
 });
 
+// Edits one card
+function editCard(id, cardDiv) {
+    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from local storage
+        chrome.storage.local.set({ flashcards: newFlashcards }); // Save the updated deck to local storage flashcards
+    });
+}
 
 // Grabs and assigns variables from homepage.html document elements
 const modeSwitch = document.getElementById("modeSwitch");
