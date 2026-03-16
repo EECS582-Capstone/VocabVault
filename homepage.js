@@ -215,13 +215,6 @@ deleteAllButton.addEventListener("click", () => {
     }
 });
 
-// Edits one card
-function editCard(id, cardDiv) {
-    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from local storage
-        chrome.storage.local.set({ flashcards: newFlashcards }); // Save the updated deck to local storage flashcards
-    });
-}
-
 // Grabs and assigns variables from homepage.html document elements
 const modeSwitch = document.getElementById("modeSwitch");
 const modeLabel = document.getElementById("modeLabel");
