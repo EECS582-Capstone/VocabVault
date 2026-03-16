@@ -159,8 +159,9 @@ function displayPopup(original, translation, direction) {
 
 // Add flashcard to chrome local storage
 function addFlashcard(front, back, direction, deckId = 'default') {
-    chrome.storage.local.get({ flashcards: [] }, (data) => {    // Get flashcards from chrome local storage
+    chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {    // Get flashcards from chrome local storage
         const flashcards = data.flashcards; // Assign variable/list to flashcards data
+        const decks = data.decks;           // Assign variable/list to decks data
         let frontLang, backLang;
         if (direction === 'es-en') {
             frontLang = 'es';
@@ -175,10 +176,15 @@ function addFlashcard(front, back, direction, deckId = 'default') {
             back: back,
             frontLang: frontLang,  // Track language of front
             backLang: backLang,    // Track language of back
-            deckId: deckId,        // Track which deck this belongs to
+            deckId: deckId,        // Associate flashcard with selected deck
             created: new Date().toISOString()
         });
-        chrome.storage.local.set({ flashcards: flashcards });   // Save new flashcards to local storage
+        const deck = decks.find(d => d.id === deckId);
+        if (deck) {
+            deck.cardIds = deck.cardIds || [];
+            deck.cardIds.push(flashcards[flashcards.length - 1].id); // Add new card ID to deck's cardIds array
+        }
+        chrome.storage.local.set({flashcards, decks});
     });
 }
 
