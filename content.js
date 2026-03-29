@@ -1,5 +1,4 @@
 /*
-/*
 Name of Code Artifact: content.js
 Description: Injects translation popups, receives translations from background.js, and creates flashcards based on selected text or transcript clicks.
 Programmer's Name: Jenny Tsotezo, Sam Kelemen, Skylar Franz
@@ -59,7 +58,7 @@ function displayPopup(original, translation, direction, options = {}) {
 
                 <div class="vv-modal-group">
                     <strong class="vv-label">Original</strong>
-                    <div class="vv-original">${escapeHtml(original)}</div>
+                    <input id="vv-original-text" class="vv-original" value="${escapeHtml(original)}">
                 </div>
 
                 <div class="vv-modal-group">
@@ -72,7 +71,7 @@ function displayPopup(original, translation, direction, options = {}) {
 
                 <div class="vv-modal-group">
                     <strong class="vv-label">Translation</strong>
-                    <div id="vv-translation-text" class="vv-translation">${escapeHtml(translation)}</div>
+                    <input id="vv-translation-text" class="vv-translation" value="${escapeHtml(translation)}">
                 </div>
 
                 ${decks.length > 0 ? `
@@ -133,7 +132,10 @@ function displayPopup(original, translation, direction, options = {}) {
         document.getElementById('vv-add-btn').addEventListener('click', () => {
             const selectedDeck = document.getElementById('vv-deck-select')?.value || 'default';
             
-            addFlashcard(original, currentTranslation, currentDirection, selectedDeck);
+            // Create flashcard with current translation and direction (editable by user)
+            const inputOriginal = document.getElementById('vv-original-text').value;
+            const inputTranslation = document.getElementById('vv-translation-text').value;
+            addFlashcard(inputOriginal, inputTranslation, currentDirection, selectedDeck);
             
             // Show success notification to user
             showNotification('Flashcard added!');
