@@ -3,7 +3,7 @@ Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
 Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
 Date Created: 02/16/2026
-Date Revised: 03/15/2026
+Date Revised: 03/29/2026
 Preconditions (inputs): Clicks and flashcards
 Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks, Edits cards
 Errors: n/a
@@ -16,9 +16,6 @@ const DEFAULT_TRANSCRIPTION_MODEL = 'universal-streaming-multilingual';
 chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
     // Render all flashcards in the container
     renderFlashcards(data.flashcards);
-    
-    // Create and populate the deck filter dropdown
-    loadDeckFilter(data.decks);
 });
 
 // Migration: ensure a default deck exists; assign orphan cards to it

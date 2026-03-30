@@ -59,6 +59,8 @@ function displayPopup(original, translation, direction, options = {}) {
                 <div class="vv-modal-group">
                     <strong class="vv-label">Original</strong>
                     <input id="vv-original-text" class="vv-original" value="${escapeHtml(original)}">
+                    <select id="original-synonyms">
+                    </select>
                 </div>
 
                 <div class="vv-modal-group">
@@ -72,6 +74,8 @@ function displayPopup(original, translation, direction, options = {}) {
                 <div class="vv-modal-group">
                     <strong class="vv-label">Translation</strong>
                     <input id="vv-translation-text" class="vv-translation" value="${escapeHtml(translation)}">
+                    <select id="translation-synonyms">
+                    </select>
                 </div>
 
                 ${decks.length > 0 ? `
@@ -83,12 +87,13 @@ function displayPopup(original, translation, direction, options = {}) {
                 </div>` : ''}
 
                 <button id="vv-add-btn" class="vv-primary-btn">Add to Flashcards</button>
-            </div>
-
-        `;
+            </div>`;
 
         document.body.appendChild(popup);
         options.onOpen?.();
+
+        addSynonyms(original, 'original-synonyms');
+        addSynonyms(translation, 'translation-synonyms');
 
         let currentDirection = direction;
         let currentTranslation = translation;
@@ -128,7 +133,7 @@ function displayPopup(original, translation, direction, options = {}) {
             });
         });
 
-// Create flashcard with current translation and direction (editable by user)
+        // Create flashcard with current translation and direction (editable by user)
         document.getElementById('vv-add-btn').addEventListener('click', () => {
             const selectedDeck = document.getElementById('vv-deck-select')?.value || 'default';
             
@@ -146,8 +151,22 @@ function displayPopup(original, translation, direction, options = {}) {
                 deckId: selectedDeck
             });
             closePopup();
+        });
+
+        const originalSelect = document.getElementById('original-synonyms');
+        const originalInput = document.getElementById('vv-original-text');
+        const translationSelect = document.getElementById('translation-synonyms');
+        const translationInput = document.getElementById('vv-translation-text');
+
+        originalSelect.addEventListener('change', (event) => {
+            originalInput.value = event.target.value;
+        });
+
+        translationSelect.addEventListener('change', (event) => {
+            translationInput.value = event.target.value;
+        });
+
     });
-});
 }
 
 function addFlashcard(front, back, direction, deckId = 'default') {
@@ -200,5 +219,31 @@ if (window.VocabVaultTranscript?.init) {
         showTranslation,
         showNotification,
         escapeHtml
+    });
+}
+
+function addSynonyms(text, selectId) {
+    const select = document.getElementById(selectId);
+
+    chrome.runtime.sendMessage({
+        action: 'getSynonyms',
+        text: text
+    }, (response) => {
+        if (response.synonyms && response.synonyms.length > 0) {
+            response.synonyms.forEach(item => {
+                console.log(item);
+                const option = document.createElement('option');
+                option.value = item.word;
+                option.textContent = item.word;
+                select.appendChild(option);
+            });
+        }
+        else {
+            console.log('none found');
+            const nothing = document.createElement('option');
+            nothing.value = text;
+            nothing.textContent = "None found";
+            select.appendChild(nothing);
+        }
     });
 }
