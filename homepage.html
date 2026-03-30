@@ -433,6 +433,76 @@ Errors: n/a
             border-color: #34596e;
             box-shadow: 0 0 0 3px rgba(52, 89, 110, 0.1);
         }
+        #test-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+        #test-container > div {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        #test-container label {
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #0a6fa1;
+        }
+        #begin-test, #submit-test {
+            background-color: #0a6fa1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+        #begin-test:hover, #submit-test:hover {
+            background-color: #084d70;
+        }
+        #test-setup, #test-list, #test-results {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        #test-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .test-item select, .test-item input {
+            min-width: 180px;
+            max-width: 260px;
+        }
+        .wrong-answer {
+            margin-left: 10px;
+            color: #a10a0a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .correct-answer {
+            margin-left: 10px;
+            color: #156d0d;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
 
     </style>
     <script src="homepage.js" defer></script>

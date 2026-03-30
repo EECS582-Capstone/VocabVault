@@ -331,7 +331,10 @@ function generateEasyTest(count, cards) {
         const options = allBackWords.map(word => `<option value="${escapeHtml(word)}">${escapeHtml(word)}</option>`).join("");
         html += `
             <div class = "test-item">
-                <strong>${index + 1}.</strong> ${escapeHtml(card.front)}
+                <div class="test-item-header">
+                    <strong>${index + 1}.</strong> 
+                    <span>${escapeHtml(card.front)}</span>
+                </div>
                 <select class ="easy-answer" data-card-id="${card.id}">
                     <option value="">Select answer...</option>
                     ${options}
@@ -360,7 +363,10 @@ function generateHardTest(count, cards) {
     selected.forEach((card, index) => {
         html += `
             <div class = "test-item">
-                <strong>${index + 1}.</strong> ${escapeHtml(card.front)}
+                <div class="test-item-header">
+                    <strong>${index + 1}.</strong> 
+                    <span>${escapeHtml(card.front)}</span>
+                </div>
                 <input type="text" class="hard-answer" data-card-id="${card.id}" placeholder="Type your answer...">
             </div>
         `;
@@ -388,28 +394,44 @@ function gradeTest(cards) {
     // EASY MODE grading
     document.querySelectorAll(".easy-answer").forEach(select => {
         const cardId = select.dataset.cardId;
-        const userAnswer = select.value.trim().toLowerCase();
-        const correctAnswer = answerKey[cardId];
+        const userAnswer = normalize(select.value);
+        const correctAnswer = normalize(answerKey[cardId]);
 
         if (userAnswer === correctAnswer) {
             correct++;
             select.style.border = "2px solid green";
+            const correctSpan = document.createElement("span");
+            correctSpan.className = "correct-answer";
+            correctSpan.textContent = `${answerKey[cardId]}`;
+            select.insertAdjacentElement('afterend', correctSpan);
         } else {
             select.style.border = "2px solid red";
+            const correctSpan = document.createElement("span");
+            correctSpan.className = "wrong-answer";
+            correctSpan.textContent = `${answerKey[cardId]}`;
+            select.insertAdjacentElement('afterend', correctSpan);
         }
     });
 
     // HARD MODE grading
     document.querySelectorAll(".hard-answer").forEach(input => {
         const cardId = input.dataset.cardId;
-        const userAnswer = input.value.trim().toLowerCase();
-        const correctAnswer = answerKey[cardId];
+        const userAnswer = normalize(input.value);
+        const correctAnswer = normalize(answerKey[cardId]);
 
         if (userAnswer === correctAnswer) {
             correct++;
             input.style.border = "2px solid green";
+            const correctSpan = document.createElement("span");
+            correctSpan.className = "correct-answer";
+            correctSpan.textContent = `${answerKey[cardId]}`;
+            input.insertAdjacentElement('afterend', correctSpan);
         } else {
             input.style.border = "2px solid red";
+            const correctSpan = document.createElement("span");
+            correctSpan.className = "wrong-answer";
+            correctSpan.textContent = `${answerKey[cardId]}`;
+            input.insertAdjacentElement('afterend', correctSpan);
         }
     });
 
@@ -420,6 +442,11 @@ function gradeTest(cards) {
     `;
 }
 
+function normalize(str) {
+    return str
+        .trim()
+        .toLowerCase()
+};
 // Add click event listener to hamburger menu icon
 menuIcon.addEventListener("click", (e) => {
     // Toggle dropdown menu visibility
@@ -513,125 +540,3 @@ function filterFlashcardsBySearch(searchTerm) {
     // Render the filtered results
     renderFlashcards(flashcards);
 }
-
-// Opens the new card creation modal
-function openNewCardModal() {
-    const modal = document.getElementById('newCardModal');
-    const deckSelect = document.getElementById('newCardDeck');
-    
-    // Populate deck options
-    deckSelect.innerHTML = '';
-    allDecks.forEach(deck => {
-        const option = document.createElement('option');
-        option.value = deck.id;
-        option.textContent = deck.name;
-        // Pre-select the active deck if not "all"
-        if (activeDeckId !== 'all' && deck.id === activeDeckId) {
-            option.selected = true;
-        }
-        deckSelect.appendChild(option);
-    });
-    
-    // Clear input fields
-    document.getElementById('newCardFront').value = '';
-    document.getElementById('newCardBack').value = '';
-    
-    // Show modal
-    modal.style.display = 'flex';
-    
-    // Focus on front input
-    document.getElementById('newCardFront').focus();
-}
-
-// Closes the new card creation modal
-function closeNewCardModal() {
-    document.getElementById('newCardModal').style.display = 'none';
-}
-
-// Creates and saves a new flashcard
-function createManualFlashcard() {
-    const front = document.getElementById('newCardFront').value.trim();
-    const back = document.getElementById('newCardBack').value.trim();
-    const deckId = document.getElementById('newCardDeck').value;
-    
-    // Validate inputs
-    if (!front || !back) {
-        alert('Please fill in both front and back text!');
-        return;
-    }
-    
-    // Check for duplicates
-    const frontLower = front.toLowerCase();
-    const backLower = back.toLowerCase();
-    
-    const isDuplicate = allFlashcards.some(card => 
-        card.front.toLowerCase() === frontLower && 
-        card.back.toLowerCase() === backLower
-    );
-    
-    if (isDuplicate) {
-        alert('This flashcard already exists! Please create a different one.');
-        return;
-    }
-    
-    // Create new flashcard object
-    const newCard = {
-        id: Date.now(),
-        front: front,
-        back: back,
-        frontLang: 'unknown',  // Manual cards don't have auto-detected language
-        backLang: 'unknown',
-        deckId: deckId,
-        created: new Date().toISOString()
-    };
-    
-    // Add to allFlashcards array
-    allFlashcards.push(newCard);
-    
-    // Save to Chrome storage
-    chrome.storage.local.set({ flashcards: allFlashcards }, () => {
-        // Close modal
-        closeNewCardModal();
-        
-        // Refresh display
-        if (activeDeckId === 'all' || activeDeckId === deckId) {
-            const filtered = activeDeckId === 'all'
-                ? allFlashcards
-                : allFlashcards.filter(c => c.deckId === activeDeckId);
-            renderFlashcards(filtered);
-        }
-        
-        // Show success message
-        showSuccessNotification('Flashcard created!');
-    });
-}
-
-// Shows a success notification
-function showSuccessNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 14px 24px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 14px; font-weight: 600; z-index: 2000;';
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 2500);
-}
-
-// Add event listeners for new card modal
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('newCardBtn').addEventListener('click', openNewCardModal);
-    document.getElementById('cancelNewCard').addEventListener('click', closeNewCardModal);
-    document.getElementById('saveNewCard').addEventListener('click', createManualFlashcard);
-    
-    // Allow Enter key to submit in modal
-    document.getElementById('newCardBack').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            createManualFlashcard();
-        }
-    });
-    
-    // Close modal when clicking outside
-    document.getElementById('newCardModal').addEventListener('click', (e) => {
-        if (e.target.id === 'newCardModal') {
-            closeNewCardModal();
-        }
-    });
-});

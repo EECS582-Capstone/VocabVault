@@ -3,7 +3,7 @@ Name of Code Artifact: transcript-ui.js
 Description: Injects the transcript toggle, draggable transcript drawer, and AssemblyAI streaming flow.
 Programmer's Name: Jenny Tsotezo, Sam Kelemen
 Date Created: 03/15/2026
-Date Revised: 03/15/2026
+Date Revised: 03/29/2026
 Preconditions (inputs): Supported page media, YouTube captions, or AssemblyAI streaming
 Postcondition (outputs): Clickable transcript UI that opens vocab popups
 Errors: n/a
@@ -179,7 +179,6 @@ Errors: n/a
                     width: 100%;
                     border: none;
                     border-radius: 14px;
-                    padding: 13px;
                     font-size: 14px;
                     font-weight: 700;
                     color: white;
