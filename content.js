@@ -152,6 +152,20 @@ function displayPopup(original, translation, direction, options = {}) {
             });
             closePopup();
         });
+
+        const originalSelect = document.getElementById('original-synonyms');
+        const originalInput = document.getElementById('vv-original-text');
+        const translationSelect = document.getElementById('translation-synonyms');
+        const translationInput = document.getElementById('vv-translation-text');
+
+        originalSelect.addEventListener('change', (event) => {
+            originalInput.value = event.target.value;
+        });
+
+        translationSelect.addEventListener('change', (event) => {
+            translationInput.value = event.target.value;
+        });
+
     });
 }
 
