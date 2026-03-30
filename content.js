@@ -215,13 +215,7 @@ function addSynonyms(text, selectId) {
         action: 'getSynonyms',
         text: text
     }, (response) => {
-        if (response.synonyms && response.synonyms > 0) {
-            const originalWord = document.createElement('option');
-            originalWord.value = text;
-            originalWord.textContent = text;
-            select.appendChild(originalWord);
-            console.log(text);
-
+        if (response.synonyms && response.synonyms.length > 0) {
             response.synonyms.forEach(item => {
                 console.log(item);
                 const option = document.createElement('option');

@@ -188,10 +188,10 @@ async function getSynonyms(text) {
 
     let url;
     if (lang == 'es') {
-        url= `https://rimar.io/api/words?k=ol-rimario-syn&rel_syn=es/${encodeURIComponent(text)}&max=10`
+        url = `https://rimar.io/api/words?k=ol-rimario-syn&rel_syn=es/${encodeURIComponent(text)}&max=10`
     }
     else {
-        url= `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
+        url = `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
     }
     const response = await fetch(url);
     return await response.json();
