@@ -65,6 +65,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
         return true;
     }
+
+    if (request.action === 'getSynonyms') {
+        getSynonyms(request.text)
+            .then(data => sendResponse({ synonyms: data }))
+            .catch(err => sendResponse({ synonyms: [], error: err.message }));
+        return true; 
+    }
 });
 
 async function translateText(text, direction = 'en-es') {
@@ -102,9 +109,9 @@ async function detectLanguage(text) {
             'hola', 'si', 'no'
         ];
 
+        const spanishChars = /[áéíóúüñ¿¡]/i;
         for (const word of spanishWords) {
             const regex = new RegExp(`\\b${word}\\b`, 'i');
-            const spanishChars = /[áéíóúüñ¿¡]/;
             if (regex.test(text) || spanishChars.test(text)) {
                 return 'es';
             }
@@ -174,4 +181,18 @@ function buildStreamingWebSocketEndpoint(endpoint) {
     } catch (error) {
         return 'wss://streaming.assemblyai.com';
     }
+}
+
+async function getSynonyms(text) {
+    const lang = await detectLanguage(text);
+
+    let url;
+    if (lang == 'es') {
+        url= `https://rimar.io/api/words?k=ol-rimario-syn&rel_syn=es/${encodeURIComponent(text)}&max=10`
+    }
+    else {
+        url= `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
+    }
+    const response = await fetch(url);
+    return await response.json();
 }
