@@ -3,7 +3,7 @@ Name of Code Artifact: background.js
 Description: Handles context menu translations and speech-to-text API requests.
 Programmer's Name: Jenny Tsotezo, Skylar Franz, Sam Kelemen
 Date Created: 02/15/2026
-Date Revised: 03/15/2026
+Date Revised: 03/29/2026
 Preconditions (inputs): User-selected text or streaming token requests
 Postcondition (outputs): Translation results or streaming session data
 Errors: n/a
@@ -104,7 +104,8 @@ async function detectLanguage(text) {
 
         for (const word of spanishWords) {
             const regex = new RegExp(`\\b${word}\\b`, 'i');
-            if (regex.test(text)) {
+            const spanishChars = /[áéíóúüñ¿¡]/;
+            if (regex.test(text) || spanishChars.test(text)) {
                 return 'es';
             }
         }
