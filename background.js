@@ -96,7 +96,7 @@ async function translateText(text, direction = 'en-es') {
     }
 }
 
-async function detectLanguage(text) {
+function detectLanguage(text) {
     try {
         const spanishWords = [
             'el', 'la', 'los', 'las',
