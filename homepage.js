@@ -638,23 +638,95 @@ function showSuccessNotification(message) {
     setTimeout(() => notification.remove(), 2500);
 }
 
+// Opens the export modal and populates the deck selector
+function openExportModal() {
+    const select = document.getElementById('exportDeck');
+
+    // Reset options and add "All Cards" as the first option
+    select.innerHTML = '<option value="all">All Cards</option>';
+
+    // Add one option per deck, pre-selecting the currently active deck
+    allDecks.forEach(deck => {
+        const opt = document.createElement('option');
+        opt.value = deck.id;
+        opt.textContent = deck.name;
+        if (deck.id === activeDeckId) opt.selected = true; // Pre-select active deck
+        select.appendChild(opt);
+    });
+
+    // Show modal and close the hamburger dropdown
+    document.getElementById('exportModal').style.display = 'flex';
+    dropdownMenu.style.display = 'none';
+}
+
+// Closes the export modal
+function closeExportModal() {
+    document.getElementById('exportModal').style.display = 'none';
+}
+
+// Builds and downloads a CSV file for the selected deck using the chosen delimiter
+function exportFlashcards() {
+    // Get selected deck ID and delimiter from the modal
+    const deckId = document.getElementById('exportDeck').value;
+    const delimiter = document.getElementById('exportDelimiter').value;
+
+    // Determine which cards to export and what to name the file
+    let cards, filename;
+    if (deckId === 'all') {
+        // Export every card across all decks
+        cards = allFlashcards;
+        filename = 'all_flashcards';
+    } else {
+        // Export only cards belonging to the selected deck
+        const deck = allDecks.find(d => d.id === deckId);
+        const cardIds = deck ? (deck.cardIds || []) : [];
+        cards = allFlashcards.filter(c => cardIds.includes(c.id));
+        // Sanitize deck name for use as a filename
+        filename = deck ? deck.name.replace(/[^a-z0-9_\-]/gi, '_') : 'flashcards';
+    }
+
+    // Build CSV content: one line per card in the form front<delimiter>back
+    const csvContent = cards.map(c => `${c.front}${delimiter}${c.back}`).join('\n');
+
+    // Create a downloadable blob and trigger the browser download
+    const blob = new Blob([csvContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`; // Save as .csv for compatibility with Anki and other apps
+    document.body.appendChild(a);
+    a.click(); // Programmatically click the link to start the download
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Release the object URL to free memory
+
+    closeExportModal();
+}
+
 // Add event listeners for new card modal
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newCardBtn').addEventListener('click', openNewCardModal);
     document.getElementById('cancelNewCard').addEventListener('click', closeNewCardModal);
     document.getElementById('saveNewCard').addEventListener('click', createManualFlashcard);
-    
+
     // Allow Enter key to submit in modal
     document.getElementById('newCardBack').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             createManualFlashcard();
         }
     });
-    
+
     // Close modal when clicking outside
     document.getElementById('newCardModal').addEventListener('click', (e) => {
         if (e.target.id === 'newCardModal') {
             closeNewCardModal();
         }
+    });
+
+    // Export modal event listeners
+    document.getElementById('exportCardsBtn').addEventListener('click', openExportModal);
+    document.getElementById('cancelExport').addEventListener('click', closeExportModal);
+    document.getElementById('confirmExport').addEventListener('click', exportFlashcards);
+    document.getElementById('exportModal').addEventListener('click', (e) => {
+        if (e.target.id === 'exportModal') closeExportModal();
     });
 });

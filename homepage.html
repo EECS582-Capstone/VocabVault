@@ -528,6 +528,7 @@ Errors: n/a
         <div id="dropdown-menu" class="dropdown-menu">
             <a href="homepage.html">Home</a>
             <a href="statistics.html">Statistics</a>
+            <button id="exportCardsBtn" style="display:block; width:100%; text-align:left; padding:8px 12px; color:#34596e; background:none; border:none; font-size:14px; cursor:pointer;">Export Cards</button>
         </div>
     </header>
 
@@ -625,6 +626,34 @@ Errors: n/a
                 <button id="saveNewCard" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
                     Create Card
                 </button>
+            </div>
+        </div>
+    </div>
+    <!-- CSV Export Modal -->
+    <div id="exportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+            <h2 style="margin:0 0 20px 0; color:#34596e; font-size:24px;">Export Flashcards</h2>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">Deck:</label>
+                <select id="exportDeck" style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px;">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">Delimiter:</label>
+                <select id="exportDelimiter" style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px;">
+                    <option value="&#9;">Tab (recommended for Anki)</option>
+                    <option value=",">Comma (,)</option>
+                    <option value=";">Semicolon (;)</option>
+                    <option value="|">Pipe (|)</option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button id="cancelExport" style="padding:10px 20px; background:#ccc; color:#333; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                <button id="confirmExport" style="padding:10px 20px; background:#34596e; color:white; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Export</button>
             </div>
         </div>
     </div>
