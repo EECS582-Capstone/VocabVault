@@ -3,7 +3,7 @@ Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
 Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
 Date Created: 02/16/2026
-Date Revised: 03/29/2026
+Date Revised: 04/12/2026
 Preconditions (inputs): Clicks and flashcards
 Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks, Edits cards
 Errors: n/a
@@ -149,6 +149,7 @@ function renderFlashcards(flashcards) {
         // Store card ID as data attribute for delete functionality
         cardDiv.dataset.id = card.id;
 
+        // Get all decks for edit select
         const deckOptions = allDecks.map(deck => 
             `<option value="${deck.id}" ${deck.id === card.deckId ? 'selected' : ''}>
                 ${escapeHtml(deck.name)}
@@ -201,17 +202,25 @@ function renderFlashcards(flashcards) {
             e.stopPropagation();
 
             const cardIndex = flashcards.findIndex(c => c.id === card.id);  // Find card in local storage based off ID
-            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
-            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value;
+            const editCard = flashcards[cardIndex];
 
-            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front; // Change card front text on homepage.html to new text
-            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back;
+            editCard.front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
+            editCard.back = cardDiv.querySelector(".back-input").value;
+
+            cardDiv.querySelector(".card-front").textContent = editCard.front; // Change card front text on homepage.html to new text
+            cardDiv.querySelector(".card-back").textContent = editCard.back;
             
-            const oldDeckId = flashcards[cardIndex].deckId;
+            // Grab values to swap decks
+            const oldDeckId = editCard.deckId;
             const newDeckId = cardDiv.querySelector(".deck-select").value;
+            editCard.deckId = newDeckId;
             updateCardDeck(card.id, oldDeckId, newDeckId, allDecks);
 
-            chrome.storage.local.set({ flashcards, allDecks });
+            chrome.storage.local.set({ 
+                flashcards: allFlashcards, 
+                decks: allDecks 
+            });
+
             editForm.style.display = 'none'; // Remove edit form
         });
 
