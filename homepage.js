@@ -648,9 +648,19 @@ function createManualFlashcard() {
     
     // Add to allFlashcards array
     allFlashcards.push(newCard);
+
+    // Update the specific deck's cardIds list
+    const targetDeck = allDecks.find(d => d.id === deckId);
+    if (targetDeck) {
+        targetDeck.cardIds = targetDeck.cardIds || [];
+        targetDeck.cardIds.push(newCard.id);
+    }
     
     // Save to Chrome storage
-    chrome.storage.local.set({ flashcards: allFlashcards }, () => {
+    chrome.storage.local.set({ 
+        flashcards: allFlashcards, 
+        decks: allDecks 
+    }, () => {
         // Close modal
         closeNewCardModal();
         
