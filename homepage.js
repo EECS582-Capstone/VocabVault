@@ -216,12 +216,16 @@ function renderFlashcards(flashcards) {
             editCard.deckId = newDeckId;
             updateCardDeck(card.id, oldDeckId, newDeckId, allDecks);
 
-            chrome.storage.local.set({ 
+            // Save cards
+            chrome.storage.local.set({
                 flashcards: allFlashcards, 
                 decks: allDecks 
+            }, () => {
+                renderFlashcards(allFlashcards.filter(c => c.deckId === activeDeckId)) // Refresh card display to show edits
             });
 
             editForm.style.display = 'none'; // Remove edit form
+
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
