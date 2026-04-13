@@ -158,17 +158,17 @@ function renderFlashcards(flashcards) {
 
         // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
-            <div class="edit-form">
-                <input class="front-input" value="${escapeHtml(card.front)}">
-                <input class="back-input" value="${escapeHtml(card.back)}">
-                <select class="deck-select">${deckOptions}</select>
-                <button class="save-button">Save</button>
-            </div>
             <div class="card-inner">
                 <button class="edit-button">E</button>
                 <button class="delete-button">X</button>
                 <div class="card-front">${escapeHtml(card.front)}</div>
                 <div class="card-back">${escapeHtml(card.back)}</div>
+            </div>
+             <div class="edit-form">
+                <input class="front-input" value="${escapeHtml(card.front)}">
+                <input class="back-input" value="${escapeHtml(card.back)}">
+                <select class="deck-select">${deckOptions}</select>
+                <button class="save-button">Save</button>
             </div>
         `;  // Add the front and back words to card, alongside delete/edit buttons and form
 
