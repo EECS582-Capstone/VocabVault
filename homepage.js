@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Meg Taggart
+Programmer's Name: Genea Dinnalll, Sam Kelemen, Skylar Franz, Meg Taggart
 Date Created: 02/16/2026
 Date Revised: 03/29/2026
 Preconditions (inputs): Clicks and flashcards
