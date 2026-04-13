@@ -3,7 +3,7 @@ Name of Code Artifact: background.js
 Description: Handles context menu translations and speech-to-text API requests.
 Programmer's Name: Jenny Tsotezo, Skylar Franz, Sam Kelemen
 Date Created: 02/15/2026
-Date Revised: 03/29/2026
+Date Revised: 04/12/2026
 Preconditions (inputs): User-selected text or streaming token requests
 Postcondition (outputs): Translation results or streaming session data
 Errors: n/a
@@ -33,7 +33,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'translateText') {
-        translateText(request.text, request.direction)
+        translateText(request.text)
             .then((translation) => {
                 sendResponse({ success: true, translation });
             })
@@ -44,14 +44,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (request.action === 'detectLanguage') {
-        detectLanguage(request.text)
-            .then((language) => {
-                sendResponse({ success: true, language });
-            })
-            .catch((error) => {
-                sendResponse({ success: false, error: error.message });
-            });
-        return true;
+        const lang = detectLanguage(request.text);
+        sendResponse({ success: true, language: lang });
     }
 
     if (request.action === 'getStreamingToken') {
@@ -74,54 +68,50 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-async function translateText(text, direction = 'en-es') {
-    const [sourceLang, targetLang] = direction.split('-');
+async function translateText(text) {
+    
+    const lang = detectLanguage(text);
 
-    console.log(`Translating "${text}" from ${sourceLang} to ${targetLang}`);
+    console.log(`Translating "${text}" from "${lang}"`);
 
     try {
-        const langPair = `${sourceLang}|${targetLang}`;
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+        let url;
+        if (lang == 'es') {
+            url = `https://lingva.ml/api/v1/es/en/${encodeURIComponent(text)}`
+        }
+        else {
+            url = `https://lingva.ml/api/v1/en/es/${encodeURIComponent(text)}`;
+        }
+        
         const response = await fetch(url);
         const data = await response.json();
 
-        if (data.responseStatus === 200 && data.responseData) {
-            return data.responseData.translatedText;
+        if (data && data.translation) {
+            console.log(`Got translation: ${data.translation}`);
+            return data.translation;
         }
 
-        return '[Translation unavailable]';
+        return '[No translation found]';
     } catch (error) {
         console.error('Translation error:', error);
         return '[Translation error]';
     }
 }
 
-async function detectLanguage(text) {
-    try {
-        const spanishWords = [
-            'el', 'la', 'los', 'las',
-            'un', 'una',
-            'de', 'del', 'al',
-            'que', 'pero', 'porque',
-            'es', 'son', 'somos',
-            'muy', 'todo', 'como',
-            'donde', 'cuando',
-            'hola', 'si', 'no'
-        ];
+function detectLanguage(text) {
+    const cleanText = text.trim().toLowerCase();
+    
+    if (/[áéíóúüñ¿¡]/.test(cleanText)) return 'es';
 
-        const spanishChars = /[áéíóúüñ¿¡]/i;
-        for (const word of spanishWords) {
-            const regex = new RegExp(`\\b${word}\\b`, 'i');
-            if (regex.test(text) || spanishChars.test(text)) {
-                return 'es';
-            }
-        }
+    const spanishEndings = /(ación|miento|dad|mente|ero|era|ajes|pico|endo|ando|ito|ita)$/i;
+    if (spanishEndings.test(cleanText)) return 'es';
 
-        return 'en';
-    } catch (error) {
-        console.error('Language detection error:', error);
-        return 'en';
-    }
+    const spanishWords = new Set(['el', 'la', 'de', 'que', 'en', 'y', 'a', 'los', 'se', 'del', 'las', 'un', 'por', 'con', 'no', 'una', 'su', 'para', 'es', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'sí', 'porque', 'esta', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde', 'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos', 'e', 'esto', 'mí', 'antes', 'algunos', 'qué', 'unos', 'yo', 'otro', 'otras', 'otra', 'él', 'tanto', 'esa', 'estos', 'mucho', 'quienes', 'nada', 'cursos', 'estaba', 'bien', 'poco', 'estos', 'pueden', 'mis', 'quiero', 'fueron', 'solo', 'nuestra']);
+    
+    const words = cleanText.split(/\s+/);
+    if (words.some(w => spanishWords.has(w))) return 'es';
+
+    return 'en';
 }
 
 async function getStreamingToken(request) {
@@ -184,7 +174,8 @@ function buildStreamingWebSocketEndpoint(endpoint) {
 }
 
 async function getSynonyms(text) {
-    const lang = await detectLanguage(text);
+    text = text.trim();
+    const lang = detectLanguage(text);
 
     let url;
     if (lang == 'es') {

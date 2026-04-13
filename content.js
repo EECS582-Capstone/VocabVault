@@ -3,7 +3,7 @@ Name of Code Artifact: content.js
 Description: Injects translation popups, receives translations from background.js, and creates flashcards based on selected text or transcript clicks.
 Programmer's Name: Jenny Tsotezo, Sam Kelemen, Skylar Franz
 Date Created: 02/15/2026
-Date Revised: 03/29/2026
+Date Revised: 04/12/2026
 Preconditions (inputs): User-selected text or transcript word clicks
 Postcondition (outputs): New flashcard with selected text and translation
 Errors: n/a
@@ -29,7 +29,6 @@ function showTranslation(text, options = {}) {
         chrome.runtime.sendMessage({
             action: 'translateText',
             text,
-            direction
         }, (response) => {
             if (response && response.success) {
                 displayPopup(text, response.translation, direction, options);
@@ -121,7 +120,6 @@ function displayPopup(original, translation, direction, options = {}) {
             chrome.runtime.sendMessage({
                 action: 'translateText',
                 text: original,
-                direction: currentDirection
             }, (response) => {
                 translationDiv.style.opacity = '1';
                 if (response && response.success) {

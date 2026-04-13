@@ -3,7 +3,7 @@ Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
 Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Meg Taggart
 Date Created: 02/16/2026
-Date Revised: 03/29/2026
+Date Revised: 04/12/2026
 Preconditions (inputs): Clicks and flashcards
 Postcondition (outputs): Displays flashcards as divs, Removes cards, Sorts decks, Edits cards
 Errors: n/a
@@ -19,12 +19,6 @@ const DEFAULT_CARD_COLORS = {
 
 let currentCardColors = { ...DEFAULT_CARD_COLORS };
 let savedCardColors = { ...DEFAULT_CARD_COLORS };
-
-// Load flashcards and decks from Chrome storage when page loads
-chrome.storage.local.get({ flashcards: [], decks: [] }, (data) => {
-    // Render all flashcards in the container
-    renderFlashcards(data.flashcards);
-});
 
 // Migration: ensure a default deck exists; assign orphan cards to it
 function ensureDefaultDeck(data) {
@@ -49,6 +43,7 @@ let allDecks = [];
 let allFlashcards = [];
 let activeDeckId = 'all';
 
+// Load flashcards and decks from Chrome storage when page loads
 chrome.storage.local.get({ decks: [], flashcards: [] }, (raw) => {
     const data = ensureDefaultDeck(raw);
     allDecks = data.decks;
@@ -162,12 +157,15 @@ function renderFlashcards(flashcards) {
         // Store card ID as data attribute for delete functionality
         cardDiv.dataset.id = card.id;
 
+        // Get all decks for edit select
+        const deckOptions = allDecks.map(deck => 
+            `<option value="${deck.id}" ${deck.id === card.deckId ? 'selected' : ''}>
+                ${escapeHtml(deck.name)}
+            </option>`
+        ).join('');
+
+        // Set inner HTML with card structure and delete button
         cardDiv.innerHTML = `
-            <div class="edit-form">
-                <input class="front-input" value="${escapeHtml(card.front)}">
-             <input class="back-input" value="${escapeHtml(card.back)}">
-             <button class="save-button">Save</button>
-            </div>
             <div class="card-inner">
                 <button class="edit-button">E</button>
                 <button class="delete-button">X</button>
@@ -178,7 +176,13 @@ function renderFlashcards(flashcards) {
                     ${escapeHtml(card.back)}
                 </div>
             </div>
-        `;
+             <div class="edit-form">
+                <input class="front-input" value="${escapeHtml(card.front)}">
+                <input class="back-input" value="${escapeHtml(card.back)}">
+                <select class="deck-select">${deckOptions}</select>
+                <button class="save-button">Save</button>
+            </div>
+        `;  // Add the front and back words to card, alongside delete/edit buttons and form
 
         cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
             cardDiv.classList.toggle("flipped");    // It flips it
@@ -207,18 +211,57 @@ function renderFlashcards(flashcards) {
 
         // On save button click, update the card with the new values from edit form
         saveButton.addEventListener("click", (e) => {
-            e.stopPropagation(); // Stop from flipping
+            e.stopPropagation();
+
             const cardIndex = flashcards.findIndex(c => c.id === card.id);  // Find card in local storage based off ID
-            flashcards[cardIndex].front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
-            flashcards[cardIndex].back = cardDiv.querySelector(".back-input").value; // Same for back
-            cardDiv.querySelector(".card-front").textContent = flashcards[cardIndex].front; // Change card front text on homepage.html to new text
-            cardDiv.querySelector(".card-back").textContent = flashcards[cardIndex].back; // Same for back
-            chrome.storage.local.set({ flashcards: flashcards }); // Save flashcards (without this, it doesn't update)
+            const editCard = flashcards[cardIndex];
+
+            editCard.front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
+            editCard.back = cardDiv.querySelector(".back-input").value;
+
+            cardDiv.querySelector(".card-front").textContent = editCard.front; // Change card front text on homepage.html to new text
+            cardDiv.querySelector(".card-back").textContent = editCard.back;
+            
+            // Grab values to swap decks
+            const oldDeckId = editCard.deckId;
+            const newDeckId = cardDiv.querySelector(".deck-select").value;
+            editCard.deckId = newDeckId;
+            updateCardDeck(card.id, oldDeckId, newDeckId, allDecks);
+
+            // Save cards
+            chrome.storage.local.set({
+                flashcards: allFlashcards, 
+                decks: allDecks 
+            }, () => {
+                renderFlashcards(allFlashcards.filter(c => c.deckId === activeDeckId)) // Refresh card display to show edits
+            });
+
             editForm.style.display = 'none'; // Remove edit form
+
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
     });
+}
+
+// Updates card deck (remove from old deck, add to new deck)
+function updateCardDeck(cardId, oldDeckId, newDeckId, decks) {
+    if (oldDeckId === newDeckId) return;
+
+    // Remove card ID from the old deck
+    const oldDeck = decks.find(d => d.id === oldDeckId);
+    if (oldDeck && oldDeck.cardIds) {
+        oldDeck.cardIds = oldDeck.cardIds.filter(id => id !== cardId);
+    }
+
+    // Add card ID to the new deck
+    const newDeck = decks.find(d => d.id === newDeckId);
+    if (newDeck) {
+        newDeck.cardIds = newDeck.cardIds || [];
+        if (!newDeck.cardIds.includes(cardId)) { // Prevent duplicate IDs
+            newDeck.cardIds.push(cardId);
+        }
+    }
 }
 
 // Deletes one card from storage based on card ID
@@ -711,9 +754,19 @@ function createManualFlashcard() {
     
     // Add to allFlashcards array
     allFlashcards.push(newCard);
+
+    // Update the specific deck's cardIds list
+    const targetDeck = allDecks.find(d => d.id === deckId);
+    if (targetDeck) {
+        targetDeck.cardIds = targetDeck.cardIds || [];
+        targetDeck.cardIds.push(newCard.id);
+    }
     
     // Save to Chrome storage
-    chrome.storage.local.set({ flashcards: allFlashcards }, () => {
+    chrome.storage.local.set({ 
+        flashcards: allFlashcards, 
+        decks: allDecks 
+    }, () => {
         // Close modal
         closeNewCardModal();
         
