@@ -242,11 +242,16 @@ deleteAllButton.addEventListener("click", () => {
 
 
 // Grabs and assigns variables from homepage.html document elements
+activeDeckId = null;
 const modeSwitch = document.getElementById("modeSwitch");
 const modeLabel = document.getElementById("modeLabel");
+const modeTitle = document.getElementById("mode-title");
 
 const learnSection = document.getElementById("learn-mode");
 const practiceSection = document.getElementById("practice-mode");
+
+const testSetup = document.getElementById("test-setup");
+const testList = document.getElementById("test-list");
 
 // Changes mode (Practice/Switch) when switch is clicked
 modeSwitch.addEventListener("change", () => {
@@ -256,12 +261,14 @@ modeSwitch.addEventListener("change", () => {
     learnSection.style.display = "none";          // Hide learn section
     practiceSection.style.display = "block";      // Show practice section
     modeLabel.textContent = "Practice Mode";      // Update label text
-    loadPracticeMode(activeDeckId);                      // Load flashcards for practice mode
+    testSetup.innerHTML = "";                     // Clear any existing test setup instructions
+    testList.innerHTML = "";                     // Clear any existing test list
   } else {
     // Switch to learn mode
     practiceSection.style.display = "none";       // Hide practice section
     learnSection.style.display = "block";         // Show learn section
     modeLabel.textContent = "Learn Mode";         // Update label text
+    modeTitle.textContent = "Learn";              // Update title text
   }
 });
 
@@ -269,69 +276,50 @@ modeSwitch.addEventListener("change", () => {
 const menuIcon = document.querySelector(".menu-icon");
 const dropdownMenu = document.getElementById("dropdown-menu");
 
-// Loads practice mode interface and flashcards based on selected deck
-function loadPracticeMode(deckId) {
-    activeDeckId = deckId;
-    const practiceSection = document.getElementById("practice-mode");
-    practiceSection.style.display = "block";
-    let cards;
-    if (deckId === 'all') {
-        cards = allFlashcards;
-    } else {
-        const deck = allDecks.find(d => d.id === deckId);
-        if (!deck) {
-            practiceSection.innerHTML = "<p>Error: Deck not found.</p>";
-            return;
-        }
-        cards = allFlashcards.filter(c => deck.cardIds.includes(c.id));
-    }
-    practiceSection.innerHTML = `
-        <h2>Practice</h2>
-        <div id="test-container">
-            <h3>Test Mode</h3>
-            <div>
-                <label><input type="radio" name="test-mode" value="easy" checked> Easy</label>
-                <label><input type="radio" name="test-mode" value="hard"> Hard</label>
-            </div>
-            <button id="begin-test">Begin Test</button>
-            <div id="test-setup"></div>
-            <div id="test-list"></div>
-        </div>
-    `;
-    attachBeginTestHandler();
-}
-
 // Attaches event handler to "Begin Test" button to generate test based on selected mode and active deck
-function attachBeginTestHandler() {
-    document.getElementById("begin-test").addEventListener("click", () => { 
-        const mode = document.querySelector('input[name="test-mode"]:checked').value;
-        let cards;
-        if (activeDeckId === 'all') {
-            cards = allFlashcards;
-        } else {
-            const deck = allDecks.find(d => d.id === activeDeckId);
-            if (!deck) {
-                console.error("Active deck not found");
-                return;
-            }
-            cards = allFlashcards.filter(c => deck.cardIds.includes(c.id));
-        }
-        const count = cards.length;
-        if (mode === "easy") {
-            generateEasyTest(count, cards);
-        }       
-        if (mode === "hard") {
-            generateHardTest(count, cards);
-        }
-    });
+function initBeginTestHandler() {
+  const beginBtn = document.getElementById("begin-test");
+  if (!beginBtn) return;
+
+  // Ensure single listener by replacing node
+  const newBtn = beginBtn.cloneNode(true);
+  beginBtn.parentNode.replaceChild(newBtn, beginBtn);
+
+  newBtn.addEventListener("click", () => {
+    const modeInput = document.querySelector('input[name="test-mode"]:checked');
+    const mode = modeInput ? modeInput.value : "easy";
+
+    // Load cards now
+    let cards = [];
+    if (activeDeckId === 'all' || activeDeckId === null) {
+      cards = allFlashcards || [];
+    } else {
+      const deck = allDecks.find(d => d.id === activeDeckId);
+      if (!deck) {
+        testSetup.innerHTML = "<p>Please select a deck before starting the test.</p>";
+        testList.innerHTML = "";
+        return;
+      }
+      cards = allFlashcards.filter(c => deck.cardIds.includes(c.id));
+    }
+
+    if (cards.length === 0) {
+      testSetup.innerHTML = "<p>No cards available for this deck.</p>";
+      testList.innerHTML = "";
+      return;
+    }
+
+    if (mode === "easy") generateEasyTest(cards);
+    else generateHardTest(cards);
+  });
 }
 
 // easy test mode generator
-function generateEasyTest(count, cards) {
+function generateEasyTest(cards) {
     document.getElementById("test-setup").innerHTML = `<p>Answer the following questions by selecting the correct answer from the dropdown menu. Good luck!</p>`;
     const testList = document.getElementById("test-list");
     const shuffled = [...cards].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, count);
+    const selected = shuffled;
     const allBackWords = cards.map(c => c.back);
     let html = "<h3>Easy Test</h3>";
     // For each selected card, create a dropdown with all possible back words as options
@@ -361,11 +349,11 @@ function generateEasyTest(count, cards) {
 }       
 
 // hard test mode generator
-function generateHardTest(count, cards) {
+function generateHardTest(cards) {
     document.getElementById("test-setup").innerHTML = `<p>Answer the following questions by typing the correct answer in the text box. Good luck!</p>`;
     const testList = document.getElementById("test-list");
     const shuffled = [...cards].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, count);
+    const selected = shuffled;
     let html = "<h3>Hard Test</h3>";
     // For each selected card, create a text input for the user to type their answer
     selected.forEach((card, index) => {
@@ -388,6 +376,8 @@ function generateHardTest(count, cards) {
     gradeTest(selected);
     });
 }
+initBeginTestHandler();
+
 // Grades test answers and displays results
 function gradeTest(cards) {
     const resultsDiv = document.getElementById("test-results");
@@ -841,4 +831,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('exportModal').addEventListener('click', (e) => {
         if (e.target.id === 'exportModal') closeExportModal();
     });
+});
+
+const themeSwitch = document.getElementById('themeSwitch');
+const themeLabel = document.getElementById('themeLabel');
+
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeSwitch.checked = true;
+    themeLabel.textContent = 'Dark Mode';
+}
+
+themeSwitch.addEventListener('change', () => {
+    if (themeSwitch.checked) {
+        document.body.classList.add('dark-mode');
+        themeLabel.textContent = 'Dark Mode';
+        localStorage.setItem('theme', 'dark');
+    } else {        
+        document.body.classList.remove('dark-mode');
+        themeLabel.textContent = 'Light Mode';
+        localStorage.setItem('theme', 'light');
+    }
 });

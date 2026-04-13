@@ -13,14 +13,69 @@ Errors: n/a
 <html lang="en">
 <head>
     <style>
-        body {
-        background: linear-gradient(135deg, #edf7ff 0%, #abd4f0 100%);
-        margin: 0;
-        min-height: 100vh;
+       :root {
+            --bg-gradient: linear-gradient(135deg, #edf7ff 0%, #abd4f0 100%);
+            --card-front-gradient: linear-gradient(145deg, #faf5e6 0%, #e8dfc7 100%);
+            --card-back-gradient: linear-gradient(145deg, #dfe7fc 0%, #98a5c2 100%);
+            --header-gradient: linear-gradient(135deg, #92d6f8 0%, #4888ad 100%);
+            --settings-panel-gradient: linear-gradient(135deg, #b1d2e2 0%, #8bb9d4 100%);
+
+            --panel-bg: #ffffff;
+            --panel-hover-bg: #e6f4f8;
+
+            --button-primary-bg: #34596e;
+            --accent-dark: #084d70;
+
+            --text-main: #000000;
+            --text-header: #d8f2ff;
+            --text-muted: #4a6473;
+
+            --border-light: rgba(110, 184, 206, 0.25);
+            --border-strong: #2b545f;
+
+            --accent: #34596e;
+            --accent-light: #6eb8ce;
+
+            --delete-all-bg: #34596e;
+            --delete-all-font: #ffffff;
+
+            --mode-font: #000000;
+            --test-font: #000000;
+
         }
 
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #192e47 0%, #091f3b 100%);
+            --card-front-gradient: linear-gradient(145deg, #212338 0%, #161b38 100%);
+            --card-back-gradient: linear-gradient(145deg, #2f3645 0%, #1e232d 100%);
+            --header-gradient: linear-gradient(135deg, #15253a 0%, #051120 100%);
+            --settings-panel-gradient: linear-gradient(135deg, #294970 0%, #113768 100%);
+
+            --panel-bg: #2e5870;
+            --panel-hover-bg: #1f3453;
+            --button-primary-bg: #a2cae0;
+            --accent-dark: #5a8fb8;
+
+            --text-main: #f5f5f5;
+            --text-header: #ffffff;
+            --text-muted: #cccccc;
+
+            --border-light: rgba(255, 255, 255, 0.15);
+            --border-strong: #52557c;
+
+            --accent: #9ec9ff;
+            --accent-light: #7ab0d6;
+
+            --delete-all-bg: #a2cae0;
+            --delete-all-font: #000000;
+
+            --mode-font: #ffffff;
+            --test-font: #ffffff;
+        }
+
+ 
         body {
-        background: linear-gradient(135deg, #edf7ff 0%, #abd4f0 100%);
+        background: var(--bg-gradient);
         margin: 0;
         min-height: 100vh;
         }
@@ -73,12 +128,12 @@ Errors: n/a
         }
         /* special color and font for front of card*/
         .card-front {
-        background: linear-gradient(145deg, #faf5e6 0%, #e8dfc7 100%);
-        color: #000000;
+        background: var(--card-front-gradient);
+        color: var(--text-main);
         }
         /* changes background for back of card and does transformation*/
         .card-back {
-        background: linear-gradient(145deg, #dfe7fc 0%, #98a5c2 100%);
+        background: var(--card-back-gradient);
         transform: rotateY(180deg);
         }
 
@@ -199,8 +254,8 @@ Errors: n/a
         /* formatting for header wrapper */
         .header {
             position: relative;
-            background: linear-gradient(135deg, #71cbf8 0%, #4888ad 100%);
-            border-bottom: 4px solid #2b545f;
+            background: var(--header-gradient);
+            border-bottom: 4px solid var(--border-strong);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.08);
 
@@ -248,21 +303,21 @@ Errors: n/a
             margin: 20px auto 8px;
             padding: 22px 24px;
             border-radius: 18px;
-            background: linear-gradient(135deg, #eefcf4 0%, #f8fbff 100%);
+            background: var(--settings-panel-gradient);
             box-shadow: 0 12px 28px rgba(52, 89, 110, 0.12);
-            border: 1px solid rgba(110, 184, 206, 0.25);
+            border: 1px solid var(--border-subtle);
             text-align: left;
         }
 
         .settings-panel h2 {
             margin-top: 0;
             margin-bottom: 8px;
-            color: #1b3442;
+            color: var(--text-main);
         }
 
         .settings-panel p {
             margin-top: 0;
-            color: #4a6473;
+            color: var(--text-secondary);
             line-height: 1.5;
         }
 
@@ -282,13 +337,13 @@ Errors: n/a
         .settings-field label {
             font-size: 13px;
             font-weight: 700;
-            color: #34596e;
+            color: var(--text-main);
         }
 
         .settings-field input {
             padding: 11px 12px;
             border-radius: 10px;
-            border: 1px solid #b8d7e1;
+            border: 1px solid var(--border-subtle);
             font-size: 14px;
         }
 
@@ -303,7 +358,7 @@ Errors: n/a
             padding: 10px 16px;
             border: none;
             border-radius: 10px;
-            background: #34596e;
+            background: var(--button-primary-bg);
             color: white;
             font-size: 14px;
             font-weight: 600;
@@ -312,7 +367,7 @@ Errors: n/a
 
         .settings-status {
             font-size: 13px;
-            color: #2f855a;
+            color: var(--status-success)    ;
             min-height: 18px;
         }
 
@@ -409,10 +464,10 @@ Errors: n/a
 
         .deck-tab {
             padding: 6px 16px;
-            border: 2px solid #6eb8ce;
+            border: 2px solid var(--accent-light);
             border-radius: 20px;
-            background: white;
-            color: #34596e;
+            background: var(--panel-bg);
+            color: var(--accent);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -420,13 +475,13 @@ Errors: n/a
         }
 
         .deck-tab:hover {
-            background: #e6f4f8;
+            background: var(--panel-hover-bg);
         }
 
         .deck-tab.active {
-            background: #34596e;
-            color: white;
-            border-color: #34596e;
+            background: var(--accent);
+            color: var(--text-header);
+            border-color: var(--accent);
         }
 
         .new-deck-btn {
@@ -443,15 +498,15 @@ Errors: n/a
         }
         .new-deck-input {
             padding: 6px 10px;
-            border: 1px solid #6eb8ce;
+            border: 1px solid var(--accent-light);
             border-radius: 6px;
             font-size: 14px;
             outline: none;
         }
         .new-deck-create-btn {
             padding: 6px 14px;
-            background: #34596e;
-            color: white;
+            background: var(--accent);
+            color: var(--text-header);
             border: none;
             border-radius: 6px;
             font-size: 14px;
@@ -460,7 +515,7 @@ Errors: n/a
         .new-deck-cancel-btn {
             padding: 6px 14px;
             background: #ccc;
-            color: #333;
+            color: var(--text-main);
             border: none;
             border-radius: 6px;
             font-size: 14px;
@@ -474,14 +529,14 @@ Errors: n/a
         #searchInput {
             width: 100%;
             padding: 10px 14px;
-            border: 2px solid #6eb8ce;
+            border: 2px solid var(--accent-light);
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
             outline: none;
         }
         #searchInput:focus {
-            border-color: #34596e;
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(52, 89, 110, 0.1);
         }
         #test-container {
@@ -506,8 +561,8 @@ Errors: n/a
             color: #0a6fa1;
         }
         #begin-test, #submit-test {
-            background-color: #0a6fa1;
-            color: white;
+            background-color: var(--accent);
+            color: var(--text-header);
             border: none;
             padding: 10px 20px;
             border-radius: 6px;
@@ -517,12 +572,13 @@ Errors: n/a
             transition: 0.2s ease;
         }
         #begin-test:hover, #submit-test:hover {
-            background-color: #084d70;
+            background-color: var(--accent-dark);
         }
         #test-setup, #test-list, #test-results {
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
+            color: var(--test-font);
         }
         .test-item {
             display: flex;
@@ -554,7 +610,30 @@ Errors: n/a
             font-weight: 600;
             font-size: 0.9rem;
         }
+        
+        #deleteAll {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background: var(--delete-all-bg);
+            color: var(--delete-all-font);
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        #mode-title {
+            color: var(--mode-font);
+            display: flex;
+            justify-content: center;
+            font-size: 24px;
+        }
 
+        #modeLabel {
+            color: var(--mode-font);
+        }
     </style>
     <script src="homepage.js" defer></script>
     <meta charset="UTF-8">
@@ -644,7 +723,20 @@ Errors: n/a
             <button id="saveCardColors" type="button">Save Card Colors</button>
             <span id="cardColorStatus" class="settings-status"></span>
         </div>
+    </section> 
+
+    <!-- light/dark mode toggle switch -->
+    <section id="light-dark-toggle" class="settings-panel">
+        <h2>Theme</h2>
+        <div class="mode-toggle">
+            <label class="switch">
+                <input type="checkbox" id="themeSwitch">
+                <span class="slider"></span>
+            </label>
+            <span id="themeLabel">Light Mode</span>
+        </div>
     </section>
+
     <!-- toggle button between learn and practice modes -->
     <div class="mode-toggle">
         <label class="switch">
@@ -663,18 +755,17 @@ Errors: n/a
             + New Card
     </button>
 </div>
-    <button id="deleteAll">Delete All Flashcards</button>
+    <button id="deleteAll" >Delete All Flashcards</button>
     <!-- learn mode section with flashcard display -->
     <section id="learn-mode">
-        <h2>Learn</h2>
+        <h2 id="mode-title">Learn</h2>
         <div id="flashcard-container"></div>
         <br><br>
     </section>
     <!-- functional practice mode section -->
     <section id="practice-mode" style="display: none;">
-        <h2>Practice</h2>
+        <h2 id="mode-title">Practice</h2>
         <div id="test-container">
-            <h3>Test Mode</h3>
             <div>
                 <label><input type="radio" name="test-mode" value="easy" checked> Easy</label>
                 <label><input type="radio" name="test-mode" value="hard"> Hard</label>
