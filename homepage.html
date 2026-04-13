@@ -1,7 +1,7 @@
 <!--
 Name of Code Artifact: homepage.html
 Description: The HTML document styling for homepage. Links to homepage.js
-Programmer's Name: Genea Dinnal, Skylar Franz, Sam Kelemen
+Programmer's Name: Genea Dinnal, Skylar Franz, Sam Kelemen, Meg Taggart
 Date Created: 02/16/2026
 Date Revised: 03/15/2026
 Preconditions (inputs): Clicks
@@ -303,6 +303,44 @@ Errors: n/a
             min-height: 18px;
         }
 
+        /* layout for color picker and preview box */
+        .color-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* styles the color picker input box */
+        .color-picker-row input[type="color"] {
+            width: 56px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid #b8d7e1;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* removes default padding inside color picker (Chrome) */
+        .color-picker-row input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        /* removes border and rounds the actual color area */
+        .color-picker-row input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+
+        /* box that shows the last saved color */
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #b8d7e1;
+            background: #ffffff;
+        }
+        
         /* delete button*/
         .delete-button {
             position: absolute;
@@ -556,6 +594,42 @@ Errors: n/a
         <div class="settings-actions">
             <button id="saveTranscriptionSettings" type="button">Save Settings</button>
             <span id="transcriptionSettingsStatus" class="settings-status"></span>
+        </div>
+    </section>
+    <!--settings box for custom card colors-->
+    <section id="flashcard-color-settings" class="settings-panel">
+        <h2>Flashcard Appearance</h2>
+        <p>Customize the front color, back color, and text color of your flashcards.</p>
+
+        <div class="settings-grid">
+            <div class="settings-field">
+                <label for="frontColor">Front Color</label>
+                <div class="color-picker-row">
+                    <input id="frontColor" type="color" value="#f6efd5">
+                    <div id="frontColorPreview" class="color-preview"></div>
+                </div>
+            </div>
+
+            <div class="settings-field">
+                <label for="backColor">Back Color</label>
+                <div class="color-picker-row">
+                    <input id="backColor" type="color" value="#A5BFCC">
+                    <div id="backColorPreview" class="color-preview"></div>
+                </div>
+            </div>
+
+            <div class="settings-field">
+                <label for="textColor">Text Color</label>
+                <div class="color-picker-row">
+                    <input id="textColor" type="color" value="#000000">
+                    <div id="textColorPreview" class="color-preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-actions">
+            <button id="saveCardColors" type="button">Save Card Colors</button>
+            <span id="cardColorStatus" class="settings-status"></span>
         </div>
     </section>
     <!-- toggle button between learn and practice modes -->

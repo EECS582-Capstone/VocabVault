@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz
+Programmer's Name: Genea Dinnal, Sam Kelemen, Skylar Franz, Meg Taggart
 Date Created: 02/16/2026
 Date Revised: 04/12/2026
 Preconditions (inputs): Clicks and flashcards
@@ -11,6 +11,14 @@ Errors: n/a
 
 const DEFAULT_TRANSCRIPTION_ENDPOINT = 'https://api.assemblyai.com';
 const DEFAULT_TRANSCRIPTION_MODEL = 'universal-streaming-multilingual';
+const DEFAULT_CARD_COLORS = {
+    frontColor: '#f6efd5',
+    backColor: '#A5BFCC',
+    textColor: '#000000'
+};
+
+let currentCardColors = { ...DEFAULT_CARD_COLORS };
+let savedCardColors = { ...DEFAULT_CARD_COLORS };
 
 // Migration: ensure a default deck exists; assign orphan cards to it
 function ensureDefaultDeck(data) {
@@ -41,7 +49,7 @@ chrome.storage.local.get({ decks: [], flashcards: [] }, (raw) => {
     allDecks = data.decks;
     allFlashcards = data.flashcards;
     renderDecks(allDecks, allFlashcards, activeDeckId);
-    renderFlashcards(allFlashcards);
+    loadCardColors(() => renderFlashcards(allFlashcards));
 
     // Add event listener for search input
     document.getElementById('searchInput').addEventListener('input', handleSearch);
@@ -161,8 +169,12 @@ function renderFlashcards(flashcards) {
             <div class="card-inner">
                 <button class="edit-button">E</button>
                 <button class="delete-button">X</button>
-                <div class="card-front">${escapeHtml(card.front)}</div>
-                <div class="card-back">${escapeHtml(card.back)}</div>
+                <div class="card-front" style="background: ${currentCardColors.frontColor}; color: ${currentCardColors.textColor};">
+                    ${escapeHtml(card.front)}
+                </div>
+                <div class="card-back" style="background: ${currentCardColors.backColor}; color: ${currentCardColors.textColor};">
+                    ${escapeHtml(card.back)}
+                </div>
             </div>
              <div class="edit-form">
                 <input class="front-input" value="${escapeHtml(card.front)}">
@@ -514,6 +526,96 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// updates the color preview box to show last saved colors
+function updateColorPreviewBoxes() {
+    const frontPreview = document.getElementById('frontColorPreview');
+    const backPreview = document.getElementById('backColorPreview');
+    const textPreview = document.getElementById('textColorPreview');
+
+    if (frontPreview) {
+        frontPreview.style.background = savedCardColors.frontColor;
+    }
+
+    if (backPreview) {
+        backPreview.style.background = savedCardColors.backColor;
+    }
+
+    if (textPreview) {
+        textPreview.style.background = savedCardColors.textColor;
+    }
+}
+
+// Loads saved flashcard colors from Chrome storage
+// Sets the color input values on the page
+// Stores colors for preview and applies them to flashcards
+function loadCardColors(callback) {
+    chrome.storage.local.get(DEFAULT_CARD_COLORS, (data) => {
+        currentCardColors = {
+            frontColor: data.frontColor || DEFAULT_CARD_COLORS.frontColor,
+            backColor: data.backColor || DEFAULT_CARD_COLORS.backColor,
+            textColor: data.textColor || DEFAULT_CARD_COLORS.textColor
+        };
+
+        savedCardColors = { ...currentCardColors };
+
+        const frontInput = document.getElementById('frontColor');
+        const backInput = document.getElementById('backColor');
+        const textInput = document.getElementById('textColor');
+
+        if (frontInput) frontInput.value = currentCardColors.frontColor;
+        if (backInput) backInput.value = currentCardColors.backColor;
+        if (textInput) textInput.value = currentCardColors.textColor;
+
+        updateColorPreviewBoxes();
+
+        if (callback) {
+            callback();
+        }
+    });
+}
+
+// Saves the selected flashcard colors to Chrome storage
+// Updates both current colors and saved colors
+// Refreshes the preview boxes and re-renders flashcards
+function saveCardColors() {
+    const frontInput = document.getElementById('frontColor');
+    const backInput = document.getElementById('backColor');
+    const textInput = document.getElementById('textColor');
+    const status = document.getElementById('cardColorStatus');
+
+    if (!frontInput || !backInput || !textInput) {
+        return;
+    }
+
+    const frontColor = frontInput.value;
+    const backColor = backInput.value;
+    const textColor = textInput.value;
+
+    chrome.storage.local.set({
+        frontColor,
+        backColor,
+        textColor
+    }, () => {
+        currentCardColors = { frontColor, backColor, textColor };
+        savedCardColors = { frontColor, backColor, textColor };
+        updateColorPreviewBoxes();
+
+
+        if (status) {
+            status.textContent = 'Card colors saved.';
+            setTimeout(() => {
+                status.textContent = '';
+            }, 2500);
+        }
+
+        const filtered = activeDeckId === 'all'
+            ? allFlashcards
+            : allFlashcards.filter(c => c.deckId === activeDeckId);
+
+        renderFlashcards(filtered);
+    });
+}
+
 function loadTranscriptionSettings() {
     chrome.storage.local.get({
         transcriptionApiKey: '',
@@ -756,6 +858,17 @@ function exportFlashcards() {
 
 // Add event listeners for new card modal
 document.addEventListener('DOMContentLoaded', () => {
+
+        loadCardColors(() => {
+        const filtered = activeDeckId === 'all'
+            ? allFlashcards
+            : allFlashcards.filter(c => c.deckId === activeDeckId);
+
+        renderFlashcards(filtered);
+    });
+
+    document.getElementById('saveCardColors').addEventListener('click', saveCardColors);
+
     document.getElementById('newCardBtn').addEventListener('click', openNewCardModal);
     document.getElementById('cancelNewCard').addEventListener('click', closeNewCardModal);
     document.getElementById('saveNewCard').addEventListener('click', createManualFlashcard);
