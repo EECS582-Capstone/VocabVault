@@ -29,6 +29,7 @@ function showTranslation(text, options = {}) {
         chrome.runtime.sendMessage({
             action: 'translateText',
             text,
+            direction
         }, (response) => {
             if (response && response.success) {
                 displayPopup(text, response.translation, direction, options);
@@ -120,13 +121,15 @@ function displayPopup(original, translation, direction, options = {}) {
             chrome.runtime.sendMessage({
                 action: 'translateText',
                 text: original,
+                direction: currentDirection
             }, (response) => {
                 translationDiv.style.opacity = '1';
                 if (response && response.success) {
                     currentTranslation = response.translation;
-                    translationDiv.textContent = response.translation;
+                    translationDiv.value = response.translation;
+                    addSynonyms(response.translation, 'translation-synonyms');
                 } else {
-                    translationDiv.textContent = '[Translation failed]';
+                    translationDiv.value = '[Translation failed]';
                 }
             });
         });

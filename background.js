@@ -33,7 +33,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'translateText') {
-        translateText(request.text)
+        translateText(request.text, request.direction)
             .then((translation) => {
                 sendResponse({ success: true, translation });
             })
@@ -68,21 +68,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-async function translateText(text) {
-    
-    const lang = detectLanguage(text);
-
-    console.log(`Translating "${text}" from "${lang}"`);
-
+async function translateText(text, direction) {
     try {
-        let url;
-        if (lang == 'es') {
-            url = `https://lingva.ml/api/v1/es/en/${encodeURIComponent(text)}`
+
+        let source, target;
+        if (direction) {
+            [source, target] = direction.split('-');
+        } else {
+            const lang = detectLanguage(text);
+            source = lang === 'es' ? 'es' : 'en';
+            target = lang === 'es' ? 'en' : 'es';
         }
-        else {
-            url = `https://lingva.ml/api/v1/en/es/${encodeURIComponent(text)}`;
-        }
-        
+
+        console.log(`Translating "${text}" from ${source} to ${target}`);
+
+        const url = `https://lingva.ml/api/v1/${source}/${target}/${encodeURIComponent(text)}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -90,7 +90,6 @@ async function translateText(text) {
             console.log(`Got translation: ${data.translation}`);
             return data.translation;
         }
-
         return '[No translation found]';
     } catch (error) {
         console.error('Translation error:', error);

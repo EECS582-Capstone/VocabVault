@@ -1,7 +1,7 @@
 /*
 Name of Code Artifact: homepage.js
 Description: Displays all flashcards on homepage.html
-Programmer's Name: Genea Dinnalll, Sam Kelemen, Skylar Franz, Meg Taggart
+Programmer's Name: Genea Dinnall, Sam Kelemen, Skylar Franz, Meg Taggart
 Date Created: 02/16/2026
 Date Revised: 04/12/2026
 Preconditions (inputs): Clicks and flashcards
@@ -55,7 +55,6 @@ chrome.storage.local.get({ decks: [], flashcards: [] }, (raw) => {
     document.getElementById('searchInput').addEventListener('input', handleSearch);
 });
 
-document.addEventListener('DOMContentLoaded', loadTranscriptionSettings);
 
 function renderDecks(decks, flashcards, activeId) {
     const tabsContainer = document.getElementById('deck-tabs');
@@ -306,6 +305,7 @@ modeSwitch.addEventListener("change", () => {
     modeLabel.textContent = "Practice Mode";      // Update label text
     testSetup.innerHTML = "";                     // Clear any existing test setup instructions
     testList.innerHTML = "";                     // Clear any existing test list
+    renderQuizHistory();
   } else {
     // Switch to learn mode
     practiceSection.style.display = "none";       // Hide practice section
@@ -351,7 +351,9 @@ function initBeginTestHandler() {
       testList.innerHTML = "";
       return;
     }
-
+    // hide begin test while test in progress
+    newBtn.style.display = "none";
+    
     if (mode === "easy") generateEasyTest(cards);
     else generateHardTest(cards);
   });
@@ -424,9 +426,9 @@ initBeginTestHandler();
 // Grades test answers and displays results
 function gradeTest(cards) {
     const resultsDiv = document.getElementById("test-results");
-
     let correct = 0;
     let total = cards.length;
+    const missedWords = [];
 
     // Build a lookup table for answers
     const answerKey = {};
@@ -435,6 +437,7 @@ function gradeTest(cards) {
     // EASY MODE grading
     document.querySelectorAll(".easy-answer").forEach(select => {
         const cardId = select.dataset.cardId;
+        const card = cards.find(c => String(c.id) === String(cardId));
         const userAnswer = normalize(select.value);
         const correctAnswer = normalize(answerKey[cardId]);
 
@@ -451,12 +454,14 @@ function gradeTest(cards) {
             correctSpan.className = "wrong-answer";
             correctSpan.textContent = `${answerKey[cardId]}`;
             select.insertAdjacentElement('afterend', correctSpan);
+            if (card) missedWords.push(card.front);
         }
     });
 
     // HARD MODE grading
     document.querySelectorAll(".hard-answer").forEach(input => {
         const cardId = input.dataset.cardId;
+        const card = cards.find(c => String(c.id) === String(cardId));
         const userAnswer = normalize(input.value);
         const correctAnswer = normalize(answerKey[cardId]);
 
@@ -473,6 +478,7 @@ function gradeTest(cards) {
             correctSpan.className = "wrong-answer";
             correctSpan.textContent = `${answerKey[cardId]}`;
             input.insertAdjacentElement('afterend', correctSpan);
+            if (card) missedWords.push(card.front);
         }
     });
 
@@ -481,6 +487,11 @@ function gradeTest(cards) {
         <h3>Results</h3>
         <p>You scored <strong>${correct}</strong> out of <strong>${total}</strong>.</p>
     `;
+
+    saveQuizResult(correct, total, missedWords, cards);
+    const beginBtn = document.getElementById("begin-test");
+    if (beginBtn) beginBtn.style.display = "";
+    renderQuizHistory();
 }
 
 function normalize(str) {
@@ -516,127 +527,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// updates the color preview box to show last saved colors
-function updateColorPreviewBoxes() {
-    const frontPreview = document.getElementById('frontColorPreview');
-    const backPreview = document.getElementById('backColorPreview');
-    const textPreview = document.getElementById('textColorPreview');
-
-    if (frontPreview) {
-        frontPreview.style.background = savedCardColors.frontColor;
-    }
-
-    if (backPreview) {
-        backPreview.style.background = savedCardColors.backColor;
-    }
-
-    if (textPreview) {
-        textPreview.style.background = savedCardColors.textColor;
-    }
-}
-
-// Loads saved flashcard colors from Chrome storage
-// Sets the color input values on the page
-// Stores colors for preview and applies them to flashcards
-function loadCardColors(callback) {
-    chrome.storage.local.get(DEFAULT_CARD_COLORS, (data) => {
-        currentCardColors = {
-            frontColor: data.frontColor || DEFAULT_CARD_COLORS.frontColor,
-            backColor: data.backColor || DEFAULT_CARD_COLORS.backColor,
-            textColor: data.textColor || DEFAULT_CARD_COLORS.textColor
-        };
-
-        savedCardColors = { ...currentCardColors };
-
-        const frontInput = document.getElementById('frontColor');
-        const backInput = document.getElementById('backColor');
-        const textInput = document.getElementById('textColor');
-
-        if (frontInput) frontInput.value = currentCardColors.frontColor;
-        if (backInput) backInput.value = currentCardColors.backColor;
-        if (textInput) textInput.value = currentCardColors.textColor;
-
-        updateColorPreviewBoxes();
-
-        if (callback) {
-            callback();
-        }
-    });
-}
-
-// Saves the selected flashcard colors to Chrome storage
-// Updates both current colors and saved colors
-// Refreshes the preview boxes and re-renders flashcards
-function saveCardColors() {
-    const frontInput = document.getElementById('frontColor');
-    const backInput = document.getElementById('backColor');
-    const textInput = document.getElementById('textColor');
-    const status = document.getElementById('cardColorStatus');
-
-    if (!frontInput || !backInput || !textInput) {
-        return;
-    }
-
-    const frontColor = frontInput.value;
-    const backColor = backInput.value;
-    const textColor = textInput.value;
-
-    chrome.storage.local.set({
-        frontColor,
-        backColor,
-        textColor
-    }, () => {
-        currentCardColors = { frontColor, backColor, textColor };
-        savedCardColors = { frontColor, backColor, textColor };
-        updateColorPreviewBoxes();
-
-
-        if (status) {
-            status.textContent = 'Card colors saved.';
-            setTimeout(() => {
-                status.textContent = '';
-            }, 2500);
-        }
-
-        const filtered = activeDeckId === 'all'
-            ? allFlashcards
-            : allFlashcards.filter(c => c.deckId === activeDeckId);
-
-        renderFlashcards(filtered);
-    });
-}
-
-function loadTranscriptionSettings() {
-    chrome.storage.local.get({
-        transcriptionApiKey: '',
-        transcriptionEndpoint: DEFAULT_TRANSCRIPTION_ENDPOINT,
-        transcriptionModel: DEFAULT_TRANSCRIPTION_MODEL
-    }, (data) => {
-        document.getElementById('transcriptionApiKey').value = data.transcriptionApiKey || '';
-        document.getElementById('transcriptionEndpoint').value = data.transcriptionEndpoint || DEFAULT_TRANSCRIPTION_ENDPOINT;
-        document.getElementById('transcriptionModel').value = data.transcriptionModel || DEFAULT_TRANSCRIPTION_MODEL;
-    });
-
-    document.getElementById('saveTranscriptionSettings').addEventListener('click', saveTranscriptionSettings);
-}
-
-function saveTranscriptionSettings() {
-    const apiKey = document.getElementById('transcriptionApiKey').value.trim();
-    const endpoint = document.getElementById('transcriptionEndpoint').value.trim() || DEFAULT_TRANSCRIPTION_ENDPOINT;
-    const model = document.getElementById('transcriptionModel').value.trim() || DEFAULT_TRANSCRIPTION_MODEL;
-    const status = document.getElementById('transcriptionSettingsStatus');
-
-    chrome.storage.local.set({
-        transcriptionApiKey: apiKey,
-        transcriptionEndpoint: endpoint,
-        transcriptionModel: model
-    }, () => {
-        status.textContent = 'Transcription settings saved.';
-        setTimeout(() => {
-            status.textContent = '';
-        }, 2500);
-    });
-}
 
 // Handles search input and filters flashcards in real-time
 function handleSearch(e) {
@@ -857,8 +747,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFlashcards(filtered);
     });
 
-    document.getElementById('saveCardColors').addEventListener('click', saveCardColors);
-
     document.getElementById('newCardBtn').addEventListener('click', openNewCardModal);
     document.getElementById('cancelNewCard').addEventListener('click', closeNewCardModal);
     document.getElementById('saveNewCard').addEventListener('click', createManualFlashcard);
@@ -886,24 +774,105 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-const themeSwitch = document.getElementById('themeSwitch');
-const themeLabel = document.getElementById('themeLabel');
 
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
     document.body.classList.add('dark-mode');
-    themeSwitch.checked = true;
-    themeLabel.textContent = 'Dark Mode';
 }
 
-themeSwitch.addEventListener('change', () => {
-    if (themeSwitch.checked) {
-        document.body.classList.add('dark-mode');
-        themeLabel.textContent = 'Dark Mode';
-        localStorage.setItem('theme', 'dark');
-    } else {        
-        document.body.classList.remove('dark-mode');
-        themeLabel.textContent = 'Light Mode';
-        localStorage.setItem('theme', 'light');
+function saveQuizResult(correct, total, missedWords, cards) {
+    const deckId = (activeDeckId === null || activeDeckId === 'all') ? 'all' : activeDeckId;
+    const deckName = deckId === 'all' ? 'All Decks' : (allDecks.find(d => d.id === deckId)?.name || deckId);
+    const result = {
+        date: new Date().toISOString(),
+        correct,
+        total,
+        deckId,
+        deckName,
+        missedWords
+    };
+ 
+    chrome.storage.local.get({ quizHistory: [], wordMisses: {}, deckStats: {} }, (data) => {
+        // Append new result
+        const history = [result, ...data.quizHistory].slice(0, 50); // keep last 50
+ 
+        // Update per-word miss counts
+        const wordMisses = data.wordMisses || {};
+        missedWords.forEach(word => {
+            wordMisses[word] = (wordMisses[word] || 0) + 1;
+        });
+ 
+        // Update per-deck stats (total questions and correct)
+        const deckStats = data.deckStats || {};
+        if (!deckStats[deckId]) deckStats[deckId] = { name: deckName, correct: 0, total: 0 };
+        deckStats[deckId].correct += correct;
+        deckStats[deckId].total += total;
+        deckStats[deckId].name = deckName; // keep name fresh
+ 
+        // Update total cards added stat (just keep current count)
+        chrome.storage.local.set({ quizHistory: history, wordMisses, deckStats });
+    });
+}
+
+// Renders previous quiz results beneath the Begin Test button
+function renderQuizHistory() {
+    let historyDiv = document.getElementById("quiz-history");
+    if (!historyDiv) {
+        historyDiv = document.createElement("div");
+        historyDiv.id = "quiz-history";
+        historyDiv.style.cssText = "width:100%;max-width:600px;margin:20px auto 0;";
+        document.getElementById("test-container").appendChild(historyDiv);
+    }
+ 
+    chrome.storage.local.get({ quizHistory: [] }, (data) => {
+        const history = data.quizHistory;
+        if (history.length === 0) {
+            historyDiv.innerHTML = "";
+            return;
+        }
+        let html = `<h3 style="text-align:center;margin-bottom:10px;color:var(--test-font);">Previous Quiz Results</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                <thead>
+                    <tr style="background:var(--border-light);">
+                        <th style="padding:8px;text-align:left;color:var(--test-font);">Date</th>
+                        <th style="padding:8px;text-align:left;color:var(--test-font);">Deck</th>
+                        <th style="padding:8px;text-align:center;color:var(--test-font);">Score</th>
+                        <th style="padding:8px;text-align:center;color:var(--test-font);">%</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        history.forEach(r => {
+            const pct = r.total > 0 ? Math.round((r.correct / r.total) * 100) : 0;
+            const dateStr = new Date(r.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            html += `<tr style="border-bottom:1px solid var(--border-light);">
+                <td style="padding:7px 8px;color:var(--test-font);">${dateStr}</td>
+                <td style="padding:7px 8px;color:var(--test-font);">${escapeHtml(r.deckName)}</td>
+                <td style="padding:7px 8px;text-align:center;color:var(--test-font);">${r.correct}/${r.total}</td>
+                <td style="padding:7px 8px;text-align:center;font-weight:700;color:var(--test-font);">${pct}%</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        historyDiv.innerHTML = html;
+    });
+}
+
+// Loads saved card colors from Chrome storage into currentCardColors
+function loadCardColors(callback) {
+    chrome.storage.local.get(DEFAULT_CARD_COLORS, (data) => {
+        currentCardColors = {
+            frontColor: data.frontColor || DEFAULT_CARD_COLORS.frontColor,
+            backColor:  data.backColor  || DEFAULT_CARD_COLORS.backColor,
+            textColor:  data.textColor  || DEFAULT_CARD_COLORS.textColor
+        };
+        savedCardColors = { ...currentCardColors };
+        if (callback) callback();
+    });
+}
+
+// Re-renders cards instantly when colors are saved from settings.html
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    if (['frontColor', 'backColor', 'textColor'].some(k => k in changes)) {
+        loadCardColors(() => { /* re-render filtered cards */ });
     }
 });
