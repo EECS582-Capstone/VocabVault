@@ -751,6 +751,412 @@ function exportFlashcards() {
     closeExportModal();
 }
 
+// Holds the raw text contents of the CSV file selected in the import modal.
+// We store it at module scope so that toggling the delimiter or re-rendering
+// the preview does not require re-reading the file from disk each time.
+let importFileContent = '';
+
+// Parses a single CSV line into an array of field strings using the supplied
+// delimiter. The parser respects fields that are surrounded by matching
+// single (') or double (") quotation marks, allowing the delimiter character
+// to appear inside the field without splitting it. Inside a quoted field a
+// doubled quote (e.g. "" or '') is interpreted as a literal quote, mirroring
+// the standard CSV escape convention. If a quote is never closed we treat the
+// rest of the line as the value to avoid losing data.
+function parseCsvLine(line, delimiter) {
+    const fields = []; // Accumulated fields for this line
+    const n = line.length;
+    let i = 0;         // Current scan index into the line
+
+    // Iterate field-by-field until the entire line has been consumed.
+    while (i <= n) {
+        // Tolerate leading spaces before a field (e.g. ", "comma" — the space
+        // after the comma is cosmetic). We only skip ASCII spaces, never the
+        // delimiter itself, so a tab-delimited file behaves correctly.
+        while (i < n && line[i] === ' ' && delimiter !== ' ') i++;
+
+        // If we have hit the end of the line right after a delimiter, push an
+        // empty trailing field and exit the loop.
+        if (i >= n) {
+            fields.push('');
+            break;
+        }
+
+        // Detect a quoted field by checking for an opening single or double
+        // quote at the current position.
+        const ch = line[i];
+        if (ch === '"' || ch === "'") {
+            const quote = ch;     // Remember which quote style opened this field
+            let value = '';       // Accumulator for the field contents
+            let j = i + 1;        // Skip past the opening quote
+            let closed = false;   // Tracks whether we found the matching close
+
+            // Read characters until the matching closing quote is reached.
+            while (j < n) {
+                if (line[j] === quote) {
+                    // A doubled quote inside a quoted field represents a
+                    // literal quote character — append one quote and skip
+                    // both characters.
+                    if (j + 1 < n && line[j + 1] === quote) {
+                        value += quote;
+                        j += 2;
+                        continue;
+                    }
+                    // Otherwise this is the terminating quote; advance past
+                    // it and stop reading.
+                    closed = true;
+                    j++;
+                    break;
+                }
+                // Ordinary character — copy verbatim into the field value.
+                value += line[j];
+                j++;
+            }
+
+            // If the user forgot to close their quote, salvage what we have
+            // and treat the whole remainder as the field's value.
+            if (!closed) {
+                fields.push(value);
+                break;
+            }
+
+            // After the closing quote we may have trailing spaces before the
+            // next delimiter; skip them so " "foo" ," parses cleanly.
+            while (j < n && line[j] === ' ' && delimiter !== ' ') j++;
+
+            // If there is stray text between the closing quote and the next
+            // delimiter, fold it onto the end of the value rather than
+            // dropping it (lenient handling of malformed input).
+            if (j < n && line[j] !== delimiter) {
+                let extra = '';
+                while (j < n && line[j] !== delimiter) {
+                    extra += line[j];
+                    j++;
+                }
+                value += extra;
+            }
+
+            fields.push(value);
+
+            // Either we are at a delimiter (advance past it to the next field)
+            // or at end of line (we are done).
+            if (j < n && line[j] === delimiter) {
+                i = j + 1;
+            } else {
+                i = n + 1;
+                break;
+            }
+        } else {
+            // Unquoted field — read everything up to the next delimiter.
+            let j = i;
+            while (j < n && line[j] !== delimiter) j++;
+            fields.push(line.substring(i, j));
+            if (j >= n) break;     // End of line — we are finished.
+            i = j + 1;             // Step over the delimiter to the next field.
+        }
+    }
+
+    return fields;
+}
+
+// Splits the entire CSV text into rows of [front, back] pairs using the
+// supplied delimiter. Each non-empty line becomes one card. If a line does
+// not contain the delimiter (i.e. it parses to a single field) the whole
+// line becomes the front of the card and the back is left empty. Lines
+// with two or more fields use the first field as the front and the second
+// as the back; any extra fields beyond the second are ignored to match
+// the simple front<delim>back schema written by the exporter.
+function parseCsvText(text, delimiter) {
+    // Normalize CRLF and CR line endings to LF before splitting so that
+    // files saved on Windows or classic Mac platforms parse the same way.
+    const normalized = String(text || '').replace(/\r\n?/g, '\n');
+    const lines = normalized.split('\n');
+    const rows = [];
+
+    lines.forEach(line => {
+        // Skip wholly empty lines so trailing newlines do not generate
+        // phantom blank cards.
+        if (line.length === 0) return;
+
+        const fields = parseCsvLine(line, delimiter);
+
+        // Determine front/back from the parsed fields. A single field with
+        // an empty value (e.g. a line of just whitespace) is also skipped.
+        let front, back;
+        if (fields.length <= 1) {
+            front = (fields[0] || '').trim();
+            back = '';
+        } else {
+            front = (fields[0] || '').trim();
+            back = (fields[1] || '').trim();
+        }
+
+        if (front === '' && back === '') return; // Nothing useful on this line
+        rows.push({ front, back });
+    });
+
+    return rows;
+}
+
+// Opens the import modal: populates the deck selector with the user's decks,
+// resets all of the modal's transient state (file input, preview pane,
+// stored file contents, allow-duplicates checkbox), and reveals the modal.
+function openImportModal() {
+    const select = document.getElementById('importDeck');
+
+    // Rebuild the deck options from scratch each time we open so newly
+    // created decks appear and previously deleted decks disappear.
+    select.innerHTML = '';
+    allDecks.forEach(deck => {
+        const opt = document.createElement('option');
+        opt.value = deck.id;
+        opt.textContent = deck.name;
+        // Pre-select the active deck when one is in focus so the most likely
+        // destination is one click away.
+        if (activeDeckId !== 'all' && deck.id === activeDeckId) opt.selected = true;
+        select.appendChild(opt);
+    });
+
+    // Wipe any leftover state from a previous open.
+    document.getElementById('importFile').value = '';
+    document.getElementById('importAllowDuplicates').checked = false;
+    importFileContent = '';
+    renderImportPreview(); // Reset the preview pane to its empty state
+
+    // Show the modal and dismiss the hamburger menu beneath it.
+    document.getElementById('importModal').style.display = 'flex';
+    dropdownMenu.style.display = 'none';
+}
+
+// Hides the import modal and releases the in-memory copy of the CSV.
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+    importFileContent = ''; // Free the file contents so we don't hold them needlessly
+}
+
+// Reads the file selected in the import modal asynchronously into
+// importFileContent and refreshes the preview when the read completes.
+function handleImportFileChange(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+        // The user cleared the selection; reset state and the preview.
+        importFileContent = '';
+        renderImportPreview();
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        // Stash the text contents so delimiter changes can re-parse without
+        // re-reading the file from disk.
+        importFileContent = e.target.result || '';
+        renderImportPreview();
+    };
+    reader.onerror = () => {
+        // On read failure surface the problem to the user and clear state.
+        alert('Could not read the selected file.');
+        importFileContent = '';
+        renderImportPreview();
+    };
+    reader.readAsText(file);
+}
+
+// Re-parses the currently loaded file content with the currently selected
+// delimiter and renders a small table of the resulting cards. Called every
+// time the file changes or the delimiter changes so the user can see
+// exactly how each row will be split before committing to the import.
+function renderImportPreview() {
+    const previewEl = document.getElementById('importPreview');
+    const delimiter = document.getElementById('importDelimiter').value;
+
+    // No file loaded yet — show a hint and stop.
+    if (!importFileContent) {
+        previewEl.innerHTML = '<em style="color:#888;">Choose a file to see a preview.</em>';
+        return;
+    }
+
+    const rows = parseCsvText(importFileContent, delimiter);
+
+    // The file parsed to zero usable rows (empty file, only blank lines, etc.).
+    if (rows.length === 0) {
+        previewEl.innerHTML = '<em style="color:#888;">No cards detected in this file.</em>';
+        return;
+    }
+
+    // Cap the number of preview rows so very large imports do not freeze the
+    // browser while building the DOM. The user can still import every row;
+    // only the visual preview is truncated.
+    const MAX_PREVIEW_ROWS = 50;
+    const visibleRows = rows.slice(0, MAX_PREVIEW_ROWS);
+
+    // Build the preview as a small two-column table (front | back). We escape
+    // each cell via textContent assignment to avoid injecting raw HTML from
+    // the user's CSV file into the page.
+    const table = document.createElement('table');
+    table.style.cssText = 'width:100%; border-collapse:collapse; font-size:13px;';
+
+    // Header row labelling the two columns.
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Front', 'Back'].forEach(label => {
+        const th = document.createElement('th');
+        th.textContent = label;
+        th.style.cssText = 'text-align:left; padding:6px 8px; border-bottom:1px solid #ccc; color:#34596e;';
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // One data row per parsed card up to the preview cap.
+    const tbody = document.createElement('tbody');
+    visibleRows.forEach(row => {
+        const tr = document.createElement('tr');
+        [row.front, row.back].forEach(value => {
+            const td = document.createElement('td');
+            // Use textContent (not innerHTML) so any HTML-looking text in the
+            // imported file is rendered literally and cannot run scripts.
+            td.textContent = value;
+            td.style.cssText = 'padding:6px 8px; border-bottom:1px solid #eee; vertical-align:top; word-break:break-word;';
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    // Replace the preview pane contents with the freshly built table.
+    previewEl.innerHTML = '';
+    previewEl.appendChild(table);
+
+    // Append a summary line — total parsed rows and a notice if we truncated.
+    const summary = document.createElement('div');
+    summary.style.cssText = 'margin-top:8px; color:#555; font-size:12px;';
+    if (rows.length > MAX_PREVIEW_ROWS) {
+        summary.textContent = `Showing first ${MAX_PREVIEW_ROWS} of ${rows.length} cards.`;
+    } else {
+        summary.textContent = `${rows.length} card${rows.length === 1 ? '' : 's'} detected.`;
+    }
+    previewEl.appendChild(summary);
+}
+
+// Performs the actual import: parses the file, filters duplicates if the
+// user did not opt in to them, creates flashcard records, attaches them to
+// the chosen deck, and persists everything to chrome.storage.local.
+function importFlashcards() {
+    const deckId = document.getElementById('importDeck').value;
+    const delimiter = document.getElementById('importDelimiter').value;
+    const allowDuplicates = document.getElementById('importAllowDuplicates').checked;
+
+    // Validate that the user actually chose a file before pressing Import.
+    if (!importFileContent) {
+        alert('Please choose a CSV file to import.');
+        return;
+    }
+
+    // Validate that the destination deck still exists (the user could
+    // theoretically have deleted it from another tab).
+    const targetDeck = allDecks.find(d => d.id === deckId);
+    if (!targetDeck) {
+        alert('Please choose a valid deck to import into.');
+        return;
+    }
+    targetDeck.cardIds = targetDeck.cardIds || [];
+
+    // Parse the file with the currently selected delimiter — same logic the
+    // preview uses, so what the user sees is what they get.
+    const parsedRows = parseCsvText(importFileContent, delimiter);
+    if (parsedRows.length === 0) {
+        alert('No cards were detected in this file.');
+        return;
+    }
+
+    // Build a lookup of cards already present in the destination deck so we
+    // can detect collisions in O(1) per row. Comparison is case-insensitive
+    // to mirror the duplicate check used by createManualFlashcard.
+    const existingKeys = new Set();
+    if (!allowDuplicates) {
+        targetDeck.cardIds.forEach(cardId => {
+            const card = allFlashcards.find(c => c.id === cardId);
+            if (!card) return;
+            existingKeys.add(`${(card.front || '').toLowerCase()}|||${(card.back || '').toLowerCase()}`);
+        });
+    }
+
+    // Walk the parsed rows, optionally skipping duplicates, and produce the
+    // new flashcard records. We assign monotonically increasing ids based
+    // on Date.now() plus the index so that every imported card has a unique
+    // id even when the loop runs faster than the millisecond clock ticks.
+    const baseId = Date.now();
+    const newCards = [];
+    let skipped = 0;
+
+    parsedRows.forEach((row, index) => {
+        // A card with no front text would be unusable, so always drop it.
+        if (!row.front) {
+            skipped++;
+            return;
+        }
+
+        // Compute the de-duplication key once so we can both check and add it.
+        const key = `${row.front.toLowerCase()}|||${row.back.toLowerCase()}`;
+
+        if (!allowDuplicates) {
+            // Reject rows that match an existing deck card OR an earlier row
+            // already accepted from this same import. This satisfies both
+            // halves of the duplicate rule the user asked for.
+            if (existingKeys.has(key)) {
+                skipped++;
+                return;
+            }
+            existingKeys.add(key);
+        }
+
+        // Construct the flashcard object using the same shape used elsewhere
+        // in the codebase (see createManualFlashcard). frontLang/backLang are
+        // unknown because we have no auto-detection during import.
+        newCards.push({
+            id: baseId + index,
+            front: row.front,
+            back: row.back,
+            frontLang: 'unknown',
+            backLang: 'unknown',
+            deckId: deckId,
+            created: new Date().toISOString()
+        });
+    });
+
+    // Nothing survived the duplicate filter — tell the user and bail out.
+    if (newCards.length === 0) {
+        alert(`No cards were imported. ${skipped} row${skipped === 1 ? '' : 's'} were skipped (duplicates or empty fronts).`);
+        return;
+    }
+
+    // Append the new cards to the global list and to the target deck's
+    // cardIds index, then persist both arrays in a single storage write.
+    newCards.forEach(card => {
+        allFlashcards.push(card);
+        targetDeck.cardIds.push(card.id);
+    });
+
+    chrome.storage.local.set({ flashcards: allFlashcards, decks: allDecks }, () => {
+        closeImportModal();
+
+        // Refresh the visible card list if the user is currently looking at
+        // either the destination deck or the "All" view.
+        if (activeDeckId === 'all' || activeDeckId === deckId) {
+            const filtered = activeDeckId === 'all'
+                ? allFlashcards
+                : allFlashcards.filter(c => c.deckId === activeDeckId);
+            renderFlashcards(filtered);
+        }
+
+        // Surface the result with a tally of imported and skipped rows so
+        // the user knows whether duplicates were filtered out.
+        const importedMsg = `Imported ${newCards.length} card${newCards.length === 1 ? '' : 's'}`;
+        const skippedMsg = skipped > 0 ? ` (${skipped} skipped)` : '';
+        showSuccessNotification(importedMsg + skippedMsg + '.');
+    });
+}
+
 // Add event listeners for new card modal
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -786,6 +1192,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('confirmExport').addEventListener('click', exportFlashcards);
     document.getElementById('exportModal').addEventListener('click', (e) => {
         if (e.target.id === 'exportModal') closeExportModal();
+    });
+
+    // Import modal event listeners. The hamburger button opens the modal,
+    // the cancel/X buttons close it, and the file/delimiter inputs both
+    // refresh the live preview so the user can see how the file will be
+    // parsed before pressing Import.
+    document.getElementById('importCardsBtn').addEventListener('click', openImportModal);
+    document.getElementById('cancelImport').addEventListener('click', closeImportModal);
+    document.getElementById('confirmImport').addEventListener('click', importFlashcards);
+    document.getElementById('importFile').addEventListener('change', handleImportFileChange);
+    document.getElementById('importDelimiter').addEventListener('change', renderImportPreview);
+    // Click-outside-to-close behaviour, mirroring the export modal.
+    document.getElementById('importModal').addEventListener('click', (e) => {
+        if (e.target.id === 'importModal') closeImportModal();
     });
 });
 

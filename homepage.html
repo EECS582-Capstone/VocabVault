@@ -675,6 +675,8 @@ Errors: n/a
             <a href="statisticspage.html">Statistics</a>
             <a href="settingspage.html">Settings</a>
             <button id="exportCardsBtn" style="display:block; width:100%; text-align:left; padding:8px 12px; color:#34596e; background:none; border:none; font-size:14px; cursor:pointer;">Export Cards</button>
+            <!-- Triggers the CSV import modal -->
+            <button id="importCardsBtn" style="display:block; width:100%; text-align:left; padding:8px 12px; color:#34596e; background:none; border:none; font-size:14px; cursor:pointer;">Import Cards</button>
         </div>
     </header>
 
@@ -778,6 +780,58 @@ Errors: n/a
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button id="cancelExport" style="padding:10px 20px; background:#ccc; color:#333; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
                 <button id="confirmExport" style="padding:10px 20px; background:#34596e; color:white; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Export</button>
+            </div>
+        </div>
+    </div>
+    <!-- CSV Import Modal: lets the user pick a CSV file, choose the destination deck, pick the delimiter, decide whether duplicates are allowed, and preview the parsed cards before committing the import -->
+    <div id="importModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; width:90%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+            <h2 style="margin:0 0 20px 0; color:#34596e; font-size:24px;">Import Flashcards</h2>
+
+            <!-- File picker for the source CSV. The file is read on the client; nothing is uploaded. -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">CSV File:</label>
+                <input type="file" id="importFile" accept=".csv,.txt,text/csv,text/plain" style="width:100%; padding:8px; border:2px solid #ddd; border-radius:6px; font-size:14px; box-sizing:border-box;">
+            </div>
+
+            <!-- Destination deck for the imported cards. Populated by JS from the user's existing decks. -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">Deck:</label>
+                <select id="importDeck" style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px;">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <!-- Delimiter selector. Mirrors the export modal options so that round-tripping works. Changing this re-renders the preview below. -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">Delimiter:</label>
+                <select id="importDelimiter" style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px;">
+                    <option value="&#9;">Tab (recommended for Anki)</option>
+                    <option value=",">Comma (,)</option>
+                    <option value=";">Semicolon (;)</option>
+                    <option value="|">Pipe (|)</option>
+                </select>
+            </div>
+
+            <!-- Duplicate handling: when unchecked, we skip rows whose front/back already exists in the target deck and rows that repeat earlier rows in the file. When checked, every row is added. -->
+            <div style="margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:8px; color:#555; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" id="importAllowDuplicates" style="width:16px; height:16px; cursor:pointer;">
+                    Allow duplicate cards (within the file and against the chosen deck)
+                </label>
+            </div>
+
+            <!-- Live preview of how the file parses with the currently selected delimiter. Updates whenever the file or delimiter changes. -->
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:6px; color:#555; font-weight:600;">Preview:</label>
+                <div id="importPreview" style="border:2px solid #ddd; border-radius:6px; padding:10px; max-height:220px; overflow-y:auto; background:#f9f9f9; font-size:13px; color:#333;">
+                    <em style="color:#888;">Choose a file to see a preview.</em>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button id="cancelImport" style="padding:10px 20px; background:#ccc; color:#333; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                <button id="confirmImport" style="padding:10px 20px; background:#34596e; color:white; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;">Import</button>
             </div>
         </div>
     </div>
