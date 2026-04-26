@@ -3,7 +3,7 @@
   "description": "Translator with Flashcard Builder and transcript-driven vocab capture",
   "version": "1.1.0",
   "manifest_version": 3,
-  "permissions": ["storage", "contextMenus"],
+  "permissions": ["storage", "contextMenus", "tts"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"

@@ -634,6 +634,21 @@ Errors: n/a
         #modeLabel {
             color: var(--mode-font);
         }
+        .speaker-btn {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 0;
+                margin-left: 10px;  
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            }
+
+            .speaker-btn:hover {
+                opacity: 1;
+        }
+
     </style>
     <script src="homepage.js" defer></script>
     <meta charset="UTF-8">
@@ -657,7 +672,8 @@ Errors: n/a
 
         <div id="dropdown-menu" class="dropdown-menu">
             <a href="homepage.html">Home</a>
-            <a href="statistics.html">Statistics</a>
+            <a href="statisticspage.html">Statistics</a>
+            <a href="settingspage.html">Settings</a>
             <button id="exportCardsBtn" style="display:block; width:100%; text-align:left; padding:8px 12px; color:#34596e; background:none; border:none; font-size:14px; cursor:pointer;">Export Cards</button>
         </div>
     </header>
@@ -665,76 +681,6 @@ Errors: n/a
     <!-- Homepage with welcome message -->
     <section id="home">
         <p class="welcome-message">Your ultimate tool for mastering vocabulary.</p>
-    </section>
-    <section id="transcription-settings" class="settings-panel">
-        <h2>Transcription Settings</h2>
-        <p>Live transcript capture uses AssemblyAI streaming. Enter your AssemblyAI API key below; the default endpoint and model are already set for real-time word timestamps.</p>
-        <div class="settings-grid">
-            <div class="settings-field">
-                <label for="transcriptionApiKey">API Key</label>
-                <input id="transcriptionApiKey" type="password" placeholder="Paste your transcription API key">
-            </div>
-            <div class="settings-field">
-                <label for="transcriptionModel">Model</label>
-                <input id="transcriptionModel" type="text" placeholder="universal-streaming-multilingual">
-            </div>
-            <div class="settings-field" style="grid-column: 1 / -1;">
-                <label for="transcriptionEndpoint">Endpoint</label>
-                <input id="transcriptionEndpoint" type="text" placeholder="https://api.assemblyai.com">
-            </div>
-        </div>
-        <div class="settings-actions">
-            <button id="saveTranscriptionSettings" type="button">Save Settings</button>
-            <span id="transcriptionSettingsStatus" class="settings-status"></span>
-        </div>
-    </section>
-    <!--settings box for custom card colors-->
-    <section id="flashcard-color-settings" class="settings-panel">
-        <h2>Flashcard Appearance</h2>
-        <p>Customize the front color, back color, and text color of your flashcards.</p>
-
-        <div class="settings-grid">
-            <div class="settings-field">
-                <label for="frontColor">Front Color</label>
-                <div class="color-picker-row">
-                    <input id="frontColor" type="color" value="#f6efd5">
-                    <div id="frontColorPreview" class="color-preview"></div>
-                </div>
-            </div>
-
-            <div class="settings-field">
-                <label for="backColor">Back Color</label>
-                <div class="color-picker-row">
-                    <input id="backColor" type="color" value="#A5BFCC">
-                    <div id="backColorPreview" class="color-preview"></div>
-                </div>
-            </div>
-
-            <div class="settings-field">
-                <label for="textColor">Text Color</label>
-                <div class="color-picker-row">
-                    <input id="textColor" type="color" value="#000000">
-                    <div id="textColorPreview" class="color-preview"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="settings-actions">
-            <button id="saveCardColors" type="button">Save Card Colors</button>
-            <span id="cardColorStatus" class="settings-status"></span>
-        </div>
-    </section> 
-
-    <!-- light/dark mode toggle switch -->
-    <section id="light-dark-toggle" class="settings-panel">
-        <h2>Theme</h2>
-        <div class="mode-toggle">
-            <label class="switch">
-                <input type="checkbox" id="themeSwitch">
-                <span class="slider"></span>
-            </label>
-            <span id="themeLabel">Light Mode</span>
-        </div>
     </section>
 
     <!-- toggle button between learn and practice modes -->
