@@ -170,9 +170,11 @@ function renderFlashcards(flashcards) {
                 <button class="delete-button">X</button>
                 <div class="card-front" style="background: ${currentCardColors.frontColor}; color: ${currentCardColors.textColor};">
                     ${escapeHtml(card.front)}
+                    <button class="speaker-btn front-speaker">🔊</button>
                 </div>
                 <div class="card-back" style="background: ${currentCardColors.backColor}; color: ${currentCardColors.textColor};">
                     ${escapeHtml(card.back)}
+                    <button class="speaker-btn back-speaker">🔊</button>
                 </div>
             </div>
              <div class="edit-form">
@@ -207,6 +209,22 @@ function renderFlashcards(flashcards) {
         editForm.addEventListener("click", (e) => { // Stop card from flipping when edit form is toggled
             e.stopPropagation();
          });
+        
+        // --- TTS speaker buttons ---
+        const frontSpeaker = cardDiv.querySelector(".front-speaker");
+        const backSpeaker = cardDiv.querySelector(".back-speaker");
+
+        frontSpeaker.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent card flip
+            const text = cardDiv.querySelector(".card-front").childNodes[0].textContent.trim();
+            chrome.tts.speak(text, { lang: 'es-ES', rate: 0.9 });
+        });
+
+        backSpeaker.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent card flip
+            const text = cardDiv.querySelector(".card-back").childNodes[0].textContent.trim();
+            chrome.tts.speak(text, { lang: 'en-US', voiceName: 'Google US English', rate: 0.9 });
+        });
 
         // On save button click, update the card with the new values from edit form
         saveButton.addEventListener("click", (e) => {
@@ -217,9 +235,6 @@ function renderFlashcards(flashcards) {
 
             editCard.front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
             editCard.back = cardDiv.querySelector(".back-input").value;
-
-            cardDiv.querySelector(".card-front").textContent = editCard.front; // Change card front text on homepage.html to new text
-            cardDiv.querySelector(".card-back").textContent = editCard.back;
             
             // Grab values to swap decks
             const oldDeckId = editCard.deckId;
