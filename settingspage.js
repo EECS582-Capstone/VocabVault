@@ -237,22 +237,3 @@ chrome.storage.local.get({ decks: [], flashcards: [] }, (data) => {
     }
 });
 
-// generate two buttons in the div class tts-test-button, one labeled spanish, one english 
-// connects to chrome.tts and upon click speaks "test" and "prueba" for eng and spanish
-
-const container = document.querySelector('.tts-test-button');
-
-const englishBtn = document.createElement('button');
-englishBtn.textContent = 'English';
-englishBtn.addEventListener('click', () => {
-  chrome.tts.speak('test', { lang: 'en-US', voiceName: 'Google US English', rate: 1.0 });
-});
-
-const spanishBtn = document.createElement('button');
-spanishBtn.textContent = 'Spanish';
-spanishBtn.addEventListener('click', () => {
-  chrome.tts.speak('prueba', { lang: 'es-ES', rate: 1.0 });
-});
-
-container.appendChild(englishBtn);
-container.appendChild(spanishBtn);
