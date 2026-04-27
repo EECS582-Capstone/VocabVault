@@ -521,6 +521,16 @@ Errors: n/a
             font-size: 14px;
             cursor: pointer;
         }
+
+        /* edit button for decks */
+        .deck-edit-btn {
+            margin-left: 6px;
+            border: none;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: 12px;
+        }
         .search-container {
         padding: 10px 16px;
         max-width: 400px;
@@ -835,5 +845,16 @@ Errors: n/a
             </div>
         </div>
     </div>
+            <!-- Edit Deck Modal -->
+        <div id="editDeckModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:white; padding:30px; border-radius:12px; width:90%; max-width:400px;">
+                <h2 style="color:#34596e;">Edit Deck Name</h2>
+                <input id="editDeckNameInput" type="text" style="width:100%; padding:10px; margin-bottom:20px;">
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button id="cancelEditDeck">Cancel</button>
+                    <button id="saveEditDeck">Save</button>
+                </div>
+            </div>
+</div>
 </body>
 </html>

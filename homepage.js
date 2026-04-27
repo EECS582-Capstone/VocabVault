@@ -77,11 +77,25 @@ function renderDecks(decks, flashcards, activeId) {
     newDeckBtn.addEventListener('click', () => showNewDeckForm(tabsContainer));
     tabsContainer.appendChild(newDeckBtn);
 }
-
+ // Creates a tab button for a deck with optional edit functionality
 function createTab(label, deckId, isActive) {
     const btn = document.createElement('button');
     btn.className = 'deck-tab' + (isActive ? ' active' : '');
-    btn.textContent = label;
+
+    if (deckId === 'all') {
+        btn.textContent = label;
+    } else {
+        btn.innerHTML = `
+            <span>${escapeHtml(label)}</span>
+            <span class="deck-edit-btn" title="Edit deck name">✎</span>
+        `;
+
+        btn.querySelector('.deck-edit-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditDeckModal(deckId);
+        });
+    }
+    // When a deck tab is clicked, set it as active and filter flashcards to show only those in the selected deck
     btn.addEventListener('click', () => {
         activeDeckId = deckId;
         renderDecks(allDecks, allFlashcards, activeDeckId);
@@ -94,8 +108,10 @@ function createTab(label, deckId, isActive) {
             const cardIds = deck.cardIds || [];
             filtered = allFlashcards.filter(c => cardIds.includes(c.id));
         }
+
         renderFlashcards(filtered);
     });
+
     return btn;
 }
 
@@ -1172,6 +1188,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancelNewCard').addEventListener('click', closeNewCardModal);
     document.getElementById('saveNewCard').addEventListener('click', createManualFlashcard);
 
+    document.getElementById('cancelEditDeck').addEventListener('click', closeEditDeckModal);
+    document.getElementById('saveEditDeck').addEventListener('click', saveEditedDeckName);
+
+    // Close edit deck modal when clicking outside of it
+    document.getElementById('editDeckModal').addEventListener('click', (e) => {
+        if (e.target.id === 'editDeckModal') closeEditDeckModal();
+    });
+
+    document.getElementById('editDeckNameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') saveEditedDeckName();
+    });
+
     // Allow Enter key to submit in modal
     document.getElementById('newCardBack').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -1311,3 +1339,45 @@ chrome.storage.onChanged.addListener((changes, area) => {
         loadCardColors(() => { /* re-render filtered cards */ });
     }
 });
+
+// Holds the ID of the deck currently being edited in the Edit Deck modal so
+let deckBeingEditedId = null;
+// Opens the Edit Deck modal for the specified deck ID, pre-filling the input
+function openEditDeckModal(deckId) {
+    const deck = allDecks.find(d => d.id === deckId);
+    if (!deck) return;
+
+    deckBeingEditedId = deckId;
+    document.getElementById('editDeckNameInput').value = deck.name;
+    document.getElementById('editDeckModal').style.display = 'flex';
+    document.getElementById('editDeckNameInput').focus();
+}
+// Closes the Edit Deck modal and clears the editing state
+function closeEditDeckModal() {
+    document.getElementById('editDeckModal').style.display = 'none';
+    deckBeingEditedId = null;
+}
+// Saves the new deck name from the Edit Deck modal, updates storage, and refreshes the display
+function saveEditedDeckName() {
+    const newName = document.getElementById('editDeckNameInput').value.trim();
+    if (!newName) {
+        alert('Deck name cannot be empty.');
+        return;
+    }
+
+    const deck = allDecks.find(d => d.id === deckBeingEditedId);
+    if (!deck) return;
+
+    deck.name = newName;
+    // Persist the updated deck list to storage and refresh the UI
+    chrome.storage.local.set({ decks: allDecks }, () => {
+        closeEditDeckModal();
+        renderDecks(allDecks, allFlashcards, activeDeckId);
+
+        const filtered = activeDeckId === 'all'
+            ? allFlashcards
+            : allFlashcards.filter(c => c.deckId === activeDeckId);
+
+        renderFlashcards(filtered);
+    });
+}
