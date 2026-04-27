@@ -177,13 +177,7 @@ function renderFlashcards(flashcards) {
                     <button class="speaker-btn back-speaker">🔊</button>
                 </div>
             </div>
-             <div class="edit-form">
-                <input class="front-input" value="${escapeHtml(card.front)}">
-                <input class="back-input" value="${escapeHtml(card.back)}">
-                <select class="deck-select">${deckOptions}</select>
-                <button class="save-button">Save</button>
-            </div>
-        `;  // Add the front and back words to card, alongside delete/edit buttons and form
+        `;  // Add the front and back words to card, alongside delete/edit buttons
 
         cardDiv.addEventListener("click", () => {   // Add event so that when card is clicked
             cardDiv.classList.toggle("flipped");    // It flips it
@@ -198,17 +192,12 @@ function renderFlashcards(flashcards) {
         });
 
         const editButton = cardDiv.querySelector(".edit-button");
-        const editForm = cardDiv.querySelector(".edit-form");
-        const saveButton = cardDiv.querySelector(".save-button");
 
         editButton.addEventListener("click", (e) => { // When edit button is clicked
             e.stopPropagation(); // (Stops event, a.k.a card from flipping)
-            editForm.style.display = editForm.style.display === 'none' ? 'flex' : 'none'; // If edit button is clicked, show edit form (flex), otherwise show nothing
-        });
+            editCardModal(card);
 
-        editForm.addEventListener("click", (e) => { // Stop card from flipping when edit form is toggled
-            e.stopPropagation();
-         });
+        });
         
         // --- TTS speaker buttons ---
         const frontSpeaker = cardDiv.querySelector(".front-speaker");
@@ -224,34 +213,6 @@ function renderFlashcards(flashcards) {
             e.stopPropagation(); // prevent card flip
             const text = cardDiv.querySelector(".card-back").childNodes[0].textContent.trim();
             chrome.tts.speak(text, { lang: 'en-US', voiceName: 'Google US English', rate: 0.9 });
-        });
-
-        // On save button click, update the card with the new values from edit form
-        saveButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-
-            const cardIndex = flashcards.findIndex(c => c.id === card.id);  // Find card in local storage based off ID
-            const editCard = flashcards[cardIndex];
-
-            editCard.front = cardDiv.querySelector(".front-input").value;  // Changes card's front value to the value from front-input in edit form
-            editCard.back = cardDiv.querySelector(".back-input").value;
-            
-            // Grab values to swap decks
-            const oldDeckId = editCard.deckId;
-            const newDeckId = cardDiv.querySelector(".deck-select").value;
-            editCard.deckId = newDeckId;
-            updateCardDeck(card.id, oldDeckId, newDeckId, allDecks);
-
-            // Save cards
-            chrome.storage.local.set({
-                flashcards: allFlashcards, 
-                decks: allDecks 
-            }, () => {
-                renderFlashcards(allFlashcards.filter(c => c.deckId === activeDeckId)) // Refresh card display to show edits
-            });
-
-            editForm.style.display = 'none'; // Remove edit form
-
         });
 
         container.appendChild(cardDiv); // Add card to HTML section
@@ -626,16 +587,6 @@ function createManualFlashcard() {
     const frontLower = front.toLowerCase();
     const backLower = back.toLowerCase();
     
-    const isDuplicate = allFlashcards.some(card => 
-        card.front.toLowerCase() === frontLower && 
-        card.back.toLowerCase() === backLower
-    );
-    
-    if (isDuplicate) {
-        alert('This flashcard already exists! Please create a different one.');
-        return;
-    }
-    
     // Create new flashcard object
     const newCard = {
         id: Date.now(),
@@ -677,6 +628,61 @@ function createManualFlashcard() {
         showSuccessNotification('Flashcard created!');
     });
 }
+
+// Like newCardModal, but with editing cards
+function editCardModal(card) {
+    const modal = document.getElementById('editCardModal');
+    const front = document.getElementById('editCardFront');
+    const back = document.getElementById('editCardBack');
+    const deckSelect = document.getElementById('editCardDeck');
+    const saveButton = document.getElementById('saveEditButton');
+    const cancelButton = document.getElementById('cancelEditButton');
+
+    front.value = card.front;
+    back.value = card.back;
+    
+    // Get all decks for edit select
+    deckSelect.innerHTML = allDecks.map(deck => 
+        `<option value="${deck.id}" ${deck.id === card.deckId ? 'selected' : ''}>
+            ${escapeHtml(deck.name)}
+        </option>`
+    ).join('');
+
+    // Show  modal
+    modal.style.display = 'flex';
+
+    cancelButton.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    saveButton.onclick = () => {
+        // Find the card in global array
+        const cardIndex = allFlashcards.findIndex(c => c.id === card.id);
+        if (cardIndex === -1) return;
+
+        const editCard = allFlashcards[cardIndex];
+
+        // Grab values to swap decks
+        const oldDeckId = editCard.deckId;
+        const newDeckId = deckSelect.value;
+
+        // Update values
+        editCard.front = front.value;
+        editCard.back = back.value;
+        editCard.deckId = newDeckId;
+        updateCardDeck(card.id, oldDeckId, newDeckId, allDecks);
+
+        // Save cards to storage
+        chrome.storage.local.set({
+            flashcards: allFlashcards,
+            decks: allDecks
+        }, () => {
+            modal.style.display = 'none'; // Close modal after saving
+            renderFlashcards(allFlashcards.filter(c => c.deckId === activeDeckId)); // Refresh card display to show edits
+        });
+    };
+}
+
 
 // Shows a success notification
 function showSuccessNotification(message) {

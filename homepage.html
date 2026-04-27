@@ -835,5 +835,36 @@ Errors: n/a
             </div>
         </div>
     </div>
+    <!-- Edit Card Creation Modal -->
+    <div id="editCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+            <h2 style="margin: 0 0 20px 0; color: #34596e; font-size: 24px;">Edit Flashcard</h2>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: #555; font-weight: 600;">Front (Question):</label>
+                <input type="text" id="editCardFront" placeholder="Enter front text..." style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: #555; font-weight: 600;">Back (Answer):</label>
+                <input type="text" id="editCardBack" placeholder="Enter back text..." style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 6px; color: #555; font-weight: 600;">Deck:</label>
+                <select id="editCardDeck" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="cancelEditButton" style="padding: 10px 20px; background: #ccc; color: #333; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    Cancel
+                </button>
+                <button id="saveEditButton" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    Save Card
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
