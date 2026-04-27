@@ -54,7 +54,8 @@ function displayPopup(original, translation, direction, options = {}) {
         popup.innerHTML = `
             <div class="vv-modal-backdrop"></div>
             <div class="vv-modal-card">
-                <button type="button" class="vv-modal-close" aria-label="Close">×</button>
+                <button type="button" class="vv-modal-refresh">↻</button>
+                <button type="button" class="vv-modal-close" aria-label="Close">X</button>
 
                 <div class="vv-modal-group">
                     <strong class="vv-label">Original</strong>
@@ -168,6 +169,14 @@ function displayPopup(original, translation, direction, options = {}) {
             translationInput.value = event.target.value;
         };
 
+        // Add button to refresh synonyms
+        const refreshButton = popup.querySelector('.vv-modal-refresh');
+        refreshButton.onclick = () => {
+            console.log('refresh button clicked');
+            addSynonyms(originalInput, 'original-synonyms');
+            addSynonyms(translationInput, 'translation-synonyms');
+        }
+
     });
 }
 
@@ -231,6 +240,7 @@ function addSynonyms(text, selectId) {
         action: 'getSynonyms',
         text: text
     }, (response) => {
+        select.innerHTML = '';
         if (response.synonyms && response.synonyms.length > 0) {
             response.synonyms.forEach(item => {
                 console.log(item);
