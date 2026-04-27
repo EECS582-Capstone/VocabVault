@@ -639,6 +639,7 @@ function editCardModal(card) {
             action: 'getSynonyms',
             text: text
         }, (response) => {
+            select.innerHTML = '';
             if (response.synonyms && response.synonyms.length > 0) {
                 response.synonyms.forEach(item => {
                     console.log(item);
@@ -681,10 +682,33 @@ function editCardModal(card) {
     addSynonyms(front.value, 'frontSynonyms');
     addSynonyms(back.value, 'backSynonyms');
 
+    // Changes the input when synonym is selected
+    const frontSynonymSelect = document.getElementById('frontSynonyms');
+    const backSynonymSelect = document.getElementById('backSynonyms');
+
+    frontSynonymSelect.onchange = (event) => {
+        front.value = event.target.value;
+    };
+
+    backSynonymSelect.onchange = (event) => {
+        back.value = event.target.value;
+    };
+
+    // Change synonyms when input changes
+    front.onchange = (event) => {
+        addSynonyms(front.value.trim(), 'frontSynonyms');
+    };
+
+    back.onchange = (event) => {
+        addSynonyms(back.value.trim(), 'backSynonyms');
+    };
+
+    // Close modal button
     cancelButton.onclick = () => {
         modal.style.display = 'none';
     };
 
+    // Save new inputs
     saveButton.onclick = () => {
         // Find the card in global array
         const cardIndex = allFlashcards.findIndex(c => c.id === card.id);

@@ -154,18 +154,19 @@ function displayPopup(original, translation, direction, options = {}) {
             closePopup();
         });
 
+        // Changes the input when synonym is
         const originalSelect = document.getElementById('original-synonyms');
         const originalInput = document.getElementById('vv-original-text');
         const translationSelect = document.getElementById('translation-synonyms');
         const translationInput = document.getElementById('vv-translation-text');
 
-        originalSelect.addEventListener('change', (event) => {
+        originalSelect.onchange = (event) => {
             originalInput.value = event.target.value;
-        });
+        };
 
-        translationSelect.addEventListener('change', (event) => {
+        translationSelect.onchange = (event) => {
             translationInput.value = event.target.value;
-        });
+        };
 
     });
 }
