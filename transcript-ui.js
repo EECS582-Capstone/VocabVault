@@ -142,6 +142,22 @@ Errors: n/a
                     cursor: pointer;
                     font-size: 22px;
                     line-height: 1;
+                    z-index: 10;
+                }
+                .vv-modal-refresh {
+                    position: absolute;
+                    top: 14px;
+                    right: 56px;
+                    width: 34px;
+                    height: 34px;
+                    border: none;
+                    border-radius: 999px;
+                    background: #4da3ff;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 22px;
+                    line-height: 1;
+                    z-index: 10;
                 }
                 .vv-modal-group {
                     margin-bottom: 16px;
@@ -184,6 +200,7 @@ Errors: n/a
                     color: white;
                     cursor: pointer;
                     background: linear-gradient(135deg, #0f766e 0%, #1d4ed8 100%);
+                    padding: 8px;
                 }
                 .vv-note {
                     position: fixed;

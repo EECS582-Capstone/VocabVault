@@ -173,16 +173,26 @@ function buildStreamingWebSocketEndpoint(endpoint) {
 }
 
 async function getSynonyms(text) {
-    text = text.trim();
-    const lang = detectLanguage(text);
+    try {
+        text = text.trim();
+        const lang = detectLanguage(text);
 
-    let url;
-    if (lang == 'es') {
-        url = `https://rimar.io/api/words?k=ol-rimario-syn&rel_syn=es/${encodeURIComponent(text)}&max=10`
+        let url;
+        if (lang == 'es') {
+            url = `https://rimar.io/api/words?k=ol-rimario-syn&rel_syn=es/${encodeURIComponent(text)}&max=10`
+        }
+        else {
+            url = `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log(`Got synonyms for ${text} in ${lang}: `, data);
+        return data;
+
+    } catch (err) {
+        console.error('Synonym request failed:', err.message);
+        return [];
     }
-    else {
-        url = `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
-    }
-    const response = await fetch(url);
-    return await response.json();
 }
