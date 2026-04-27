@@ -183,6 +183,15 @@ async function getSynonyms(text) {
     else {
         url = `https://www.onelook.com/api/sug?v=ol_gte2_suggest&k=olt_phrases&max=10&s=${encodeURIComponent(text)}`;
     }
+
     const response = await fetch(url);
-    return await response.json();
+    const data = await response.json();
+    if (data) {
+        console.log(`Got synonyms for ${text} in ${lang}: `, data);
+        return data;
+    }
+    else {
+        console.log('Synonym request failed')
+    return [];
+    }
 }
