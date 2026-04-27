@@ -631,6 +631,33 @@ function createManualFlashcard() {
 
 // Like newCardModal, but with editing cards
 function editCardModal(card) {
+    
+    function addSynonyms(text, selectId) {
+        const select = document.getElementById(selectId);
+
+        chrome.runtime.sendMessage({
+            action: 'getSynonyms',
+            text: text
+        }, (response) => {
+            if (response.synonyms && response.synonyms.length > 0) {
+                response.synonyms.forEach(item => {
+                    console.log(item);
+                    const option = document.createElement('option');
+                    option.value = item.word;
+                    option.textContent = item.word;
+                    select.appendChild(option);
+                });
+            }
+            else {
+                console.log('none found');
+                const nothing = document.createElement('option');
+                nothing.value = text;
+                nothing.textContent = "None found";
+                select.appendChild(nothing);
+            }
+        });
+    }
+
     const modal = document.getElementById('editCardModal');
     const front = document.getElementById('editCardFront');
     const back = document.getElementById('editCardBack');
@@ -650,6 +677,9 @@ function editCardModal(card) {
 
     // Show  modal
     modal.style.display = 'flex';
+
+    addSynonyms(front.value, 'frontSynonyms');
+    addSynonyms(back.value, 'backSynonyms');
 
     cancelButton.onclick = () => {
         modal.style.display = 'none';
