@@ -1399,6 +1399,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
         loadCardColors(() => { /* re-render filtered cards */ });
     }
 
+
 });
 
 // Holds the ID of the deck currently being edited in the Edit Deck modal so
@@ -1443,4 +1444,27 @@ function saveEditedDeckName() {
     });
 }
 
+function createTab(label, deckId, isActive) {
+    const btn = document.createElement('button');
+    btn.className = 'deck-tab' + (isActive ? ' active' : '');
+    
+    // Count cards in this deck
+    const cardCount = deckId === 'all' 
+        ? allFlashcards.length 
+        : allFlashcards.filter(c => c.deckId === deckId).length;
+    
+    // Display deck name with card count
+    btn.textContent = `${label} (${cardCount})`;
+    
+    btn.dataset.deckId = deckId;
+    btn.addEventListener('click', () => {
+        activeDeckId = deckId;
+        renderDecks(allDecks, allFlashcards, activeDeckId);
+        const filtered = deckId === 'all'
+            ? allFlashcards
+            : allFlashcards.filter(c => c.deckId === deckId);
+        renderFlashcards(filtered);
+    });
+    return btn;
+}
 
